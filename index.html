@@ -3,91 +3,75 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>12-Week Adaptive Bento</title>
+    <title>12-Week Fitness Final (Fixed)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             /* 基础色盘 */
-            --accent-100: #e5e7eb;
-            --accent-200: #d1d5db;
-            --accent-400: #9ca3af;
-            --accent-500: #6b7280; /* 默认主色 */
-            
-            /* 文字颜色 */
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --text-on-accent: #ffffff;
-
-            /* 背景体系 */
+            --accent-color: #ff2d55; /* 默认主色 */
             --bg-page: transparent; 
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --bg-card-hover: rgba(255, 255, 255, 0.95);
-            --border-card: rgba(255, 255, 255, 0.6);
-            --glass-blur: blur(12px);
             
-            /* 进度条轨道 */
-            --track-bg: rgba(0, 0, 0, 0.06);
+            /* 卡片背景 */
+            --bg-card: rgba(255, 255, 255, 0.94);
+            --bg-card-hover: rgba(255, 255, 255, 1);
+            --border-card: rgba(0, 0, 0, 0.06);
+            --glass-blur: blur(24px);
+            
+            /* 轨道颜色 (更淡、更细) */
+            --track-bg: rgba(0, 0, 0, 0.08);
 
             /* 阴影 */
-            --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
             
             /* 变量 */
             --gap: 12px;
-            --radius: 22px;
-            --pad: 18px;
+            --radius: 24px;
+            --pad: 20px;
+            
+            /* 弹窗专用 */
+            --modal-bg: #ffffff;
+            --modal-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
         }
 
-        /* 深色模式变量 */
+        /* 深色模式 */
         :root[data-theme="dark"] {
-            --bg-page: transparent;
-            --bg-card: rgba(30, 30, 30, 0.7);
-            --bg-card-hover: rgba(45, 45, 45, 0.85);
+            --bg-card: rgba(30, 30, 32, 0.88);
+            --bg-card-hover: rgba(44, 44, 46, 0.96);
             --border-card: rgba(255, 255, 255, 0.1);
-            --text-main: #f5f5f7;
-            --text-muted: #98989d;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
             --track-bg: rgba(255, 255, 255, 0.15);
-            --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.4);
+            --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --modal-bg: #1c1c1e;
         }
 
         * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
         
         body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center; justify-content: center;
+            margin: 0; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
             background: var(--bg-page);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: "SF Pro Display", "SF Pro Text", "Inter", -apple-system, system-ui, sans-serif;
             color: var(--text-main);
-            padding: 10px; 
-            overflow: hidden; 
+            padding: 10px; overflow: hidden;
+            transition: background 0.3s ease;
         }
 
-        /* --- 核心容器 --- */
-        .widget-container {
-            width: 100%;
-            max-width: 600px;
-            transition: max-width 0.3s ease;
-        }
+        .widget-container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: var(--gap); }
 
-        /* 默认双列网格 */
+        /* 布局 */
         .bento-grid {
             display: grid;
-            grid-template-columns: 1.1fr 1fr; 
+            grid-template-columns: 1.2fr 1fr; 
             grid-template-rows: auto auto; 
             gap: var(--gap);
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
+        .bento-grid[data-layout="list"] { grid-template-columns: 1fr; }
 
-        /* --- 单列模式 (List View) --- */
-        .bento-grid[data-layout="list"] {
-            grid-template-columns: 1fr; /* 强制单列 */
-            gap: 10px;
-        }
-
-        /* --- 卡片样式 --- */
+        /* 卡片基础 */
         .card {
             background: var(--bg-card);
             backdrop-filter: var(--glass-blur);
@@ -96,397 +80,470 @@
             border-radius: var(--radius);
             padding: var(--pad);
             box-shadow: var(--shadow-card);
-            transition: transform 0.2s ease, background 0.3s ease, grid-column 0.3s ease;
+            transition: transform 0.2s ease, background 0.3s ease;
             position: relative;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
+            overflow: visible; 
         }
-        .card:hover { transform: translateY(-1px); background: var(--bg-card-hover); }
+        .card:hover { transform: translateY(-2px); background: var(--bg-card-hover); }
 
-        .card__label {
-            font-size: 11px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .value-text { font-weight: 700; font-size: 20px; color: var(--text-main); line-height: 1.2; }
-
-        /* --- 控制区优化 (修复方块问题) --- */
-        .card--clock {
-            grid-column: 1 / 2;
-            justify-content: space-between;
-        }
-        /* 单列模式下，时钟卡占满 */
-        .bento-grid[data-layout="list"] .card--clock { grid-column: 1 / -1; }
-
-        .clock-display {
-            font-size: clamp(32px, 8vw, 44px);
-            font-weight: 800; font-variant-numeric: tabular-nums;
-            letter-spacing: -0.03em; line-height: 1; margin-top: 12px;
-            color: var(--text-main);
-        }
-
+        /* 1. 控制栏 */
         .header-ctrls {
-            display: flex; gap: 8px; position: absolute; top: 16px; right: 16px; z-index: 10;
+            display: flex; gap: 8px; position: absolute; top: 18px; right: 18px; z-index: 50;
+            opacity: 0.3; transition: opacity 0.2s; 
         }
+        .card:hover .header-ctrls, .header-ctrls:hover { opacity: 1; }
         
         .ctrl-btn {
-            width: 28px; height: 28px;
-            border-radius: 50%; /* 强制圆形 */
-            border: 1px solid rgba(0,0,0,0.08); /* 增加描边防止融入背景 */
-            background: rgba(128,128,128, 0.1);
+            width: 28px; height: 28px; border-radius: 50%; border: none;
+            background: rgba(128,128,128, 0.15); color: var(--text-muted);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; color: var(--text-muted); padding: 0;
-            transition: all 0.2s;
+            font-size: 13px; padding: 0; margin: 0;
+            transition: transform 0.2s, background 0.2s;
         }
-        .ctrl-btn:hover { transform: scale(1.05); background: rgba(128,128,128, 0.15); color: var(--text-main); }
+        .ctrl-btn:hover { transform: scale(1.1); background: var(--accent-color); color: #fff; }
+        .ctrl-btn--color { background-color: var(--bg-swatch) !important; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* 2. 时钟卡片 */
+        .card--clock { grid-column: 1 / 2; justify-content: space-between; min-height: 130px; }
+        .bento-grid[data-layout="list"] .card--clock { grid-column: 1 / -1; min-height: auto; flex-direction: row; align-items: center; padding-right: 150px; }
         
-        /* 颜色按钮修复：直接使用背景色，不再用 pseudo-element */
-        .ctrl-btn--color {
-            background-color: var(--bg-swatch) !important;
-            border: 1.5px solid rgba(255,255,255,0.4); /* 内部光泽 */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15); /* 外部投影 */
-        }
-
+        .card__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; }
         .badge {
-            display: inline-flex; align-items: center; padding: 2px 8px;
-            border-radius: 6px; background: var(--track-bg); color: var(--text-main);
-            font-size: 11px; font-weight: 600; margin-top: 2px;
+            display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px;
+            background: var(--track-bg); color: var(--text-main); font-size: 11px; font-weight: 600;
         }
+        .clock-display {
+            font-size: clamp(36px, 9vw, 52px); font-weight: 800; font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em; line-height: 1; color: var(--text-main); margin-top: auto;
+        }
+        .bento-grid[data-layout="list"] .clock-display { margin-top: 0; font-size: 36px; }
+        .bento-grid[data-layout="list"] .clock-group { display: flex; align-items: center; gap: 16px; }
 
-        /* --- 12周核心卡片 --- */
+        /* 3. 核心进度 */
         .card--main {
             grid-column: 2 / 3; grid-row: 1 / 3; 
-            background: var(--accent-500); color: #fff; border: none; justify-content: space-between;
-            overflow: hidden;
+            background: var(--accent-color);
+            color: #fff; border: none; justify-content: space-between; overflow: hidden;
         }
+        .bento-grid[data-layout="list"] .card--main { grid-column: 1 / -1; grid-row: auto; flex-direction: row; align-items: center; gap: 16px; padding: 24px; }
         
-        /* 单列模式下，主卡片变矮变宽 */
-        .bento-grid[data-layout="list"] .card--main {
-            grid-column: 1 / -1; /* 占满一行 */
-            grid-row: auto;
-            aspect-ratio: auto;
-            padding: 20px;
-            flex-direction: row; /* 横向排列内容 */
-            align-items: center;
-            gap: 16px;
-        }
-        /* 单列模式下的主卡片内部布局调整 */
-        .bento-grid[data-layout="list"] .card--main > div:first-child { flex: 1; }
-        .bento-grid[data-layout="list"] .card--main .hero-bar-container { width: 50%; margin-top: 0; }
-
-        .card--main .card__label { color: rgba(255,255,255, 0.7); }
-        .card--main .value-text { color: #fff; font-size: clamp(32px, 9vw, 52px); line-height: 1; margin-top: 4px; }
-        .card--main .sub-text { color: rgba(255,255,255, 0.9); font-size: 12px; font-weight: 500; }
+        .card--main .card__label { color: rgba(255,255,255, 0.75); }
+        .main-stat { font-size: clamp(38px, 8vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+        .bento-grid[data-layout="list"] .main-stat { font-size: 42px; }
         
-        .card--main::before {
-            content: ''; position: absolute; top: -30%; right: -30%; width: 140px; height: 140px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
-            filter: blur(35px); border-radius: 50%; pointer-events: none;
-        }
+        .hero-bar { height: 14px; background: rgba(0,0,0, 0.2); border-radius: 99px; overflow: hidden; position: relative; margin-top: 14px; width: 100%; }
+        .hero-bar__fill { height: 100%; width: 0%; background: #fff; border-radius: 99px; transition: width 1s ease; }
+        .bento-grid[data-layout="list"] .hero-bar-container { flex: 1; min-width: 0; }
 
-        .hero-bar-container { margin-top: auto; }
-        .bar--hero {
-            height: 12px; background: rgba(0,0,0, 0.2); border-radius: 99px; overflow: hidden; position: relative;
-        }
-        .bar--hero .bar__fill {
-            height: 100%; width: 0%; background: #fff; border-radius: 99px; transition: width 1s ease;
-        }
-        .days-left { text-align: right; font-size: 11px; margin-top: 6px; opacity: 0.9; font-weight: 500; }
-
-        /* --- 底部小统计 --- */
-        .split-row {
-            grid-column: 1 / 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
-        }
-        /* 单列模式下，底部依然保持并排 */
+        /* 4. 圆环区域 (Hover 交互) */
+        .split-row { grid-column: 1 / 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
         .bento-grid[data-layout="list"] .split-row { grid-column: 1 / -1; }
 
-        .card--mini {
-            padding: var(--pad); justify-content: flex-end; aspect-ratio: auto; min-height: 90px;
-        }
-        .card--mini .value-text { font-size: 22px; }
+        .card--ring { padding: 16px; align-items: center; justify-content: center; text-align: center; gap: 8px; cursor: default; }
+        .bento-grid[data-layout="list"] .card--ring { flex-direction: row; justify-content: space-between; padding: 0 24px; height: 76px; }
 
-        .bar {
-            height: 6px; width: 100%; background: var(--track-bg); border-radius: 99px; margin-top: 10px; overflow: hidden;
+        .ring-text-group { display: flex; flex-direction: column; align-items: center; height: 38px; justify-content: center; }
+        .bento-grid[data-layout="list"] .ring-text-group { align-items: flex-start; }
+        
+        .ring-val-pct { display: block; font-size: 18px; font-weight: 700; color: var(--text-main); line-height: 1; }
+        .ring-val-days { display: none; font-size: 14px; font-weight: 600; color: var(--accent-color); line-height: 1; }
+        
+        .card--ring:hover .ring-val-pct { display: none; }
+        .card--ring:hover .ring-val-days { display: block; animation: slideUp 0.2s ease; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 5. 全新圆环结构 (修复对齐与透明问题) --- */
+        .apple-ring-container {
+            position: relative; width: 52px; height: 52px;
         }
-        .bar__fill {
-            height: 100%; width: 0%; background: var(--accent-500); border-radius: 99px; transition: width 0.6s ease;
+        /* 轨道环 */
+        .apple-ring-track {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 5px solid var(--track-bg);
+        }
+        /* 进度环 */
+        .apple-ring-progress {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(var(--accent-color) var(--deg), transparent 0deg);
+            /* 使用 mask 镂空中心 */
+            -webkit-mask: radial-gradient(transparent 60%, black 62%);
+            mask: radial-gradient(transparent 60%, black 62%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        /* 圆球 (完美对齐) */
+        .apple-ring-sphere {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 5px; height: 5px;
+            margin: -2.5px 0 0 -2.5px; /* 自身居中 */
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0,0,0,0.15);
+            /* 先旋转角度，再向外平移半径距离 (52px/2 - 5px/2 = 23.5px) */
+            transform: rotate(var(--deg)) translateY(-23.5px);
+            opacity: 0; transition: opacity 0.3s;
         }
 
-        /* --- 引用 --- */
+        /* --- 6. 每日引言 (回归) --- */
         .quote-card {
-            grid-column: 1 / -1; text-align: center; padding: 4px 0 0 0; 
-            background: transparent; border: none; box-shadow: none; backdrop-filter: none;
+            text-align: center; padding: 8px 0;
         }
         .quote-text {
-            font-size: 12px; color: var(--text-muted); opacity: 0.8; font-style: italic;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0; opacity: 0.8;
+            transition: opacity 0.5s;
         }
 
-        /* --- Modals --- */
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-            display: none; align-items: center; justify-content: center; z-index: 100;
+        /* --- 弹窗样式 --- */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal[aria-hidden="false"] { display: flex; animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal__card { 
+            background: var(--modal-bg); 
+            padding: 24px; border-radius: 20px; 
+            width: 340px; max-width: 90vw;
+            box-shadow: var(--modal-shadow); 
         }
-        .modal[aria-hidden="false"] { display: flex; }
-        .modal__card {
-            background: var(--bg-card); padding: 20px; border-radius: 18px;
-            width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-            color: var(--text-main); border: 1px solid var(--border-card);
-        }
+        .modal__title { margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .modal__actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
         
-        .btn {
-            background: var(--accent-500); color: #fff; border: none; padding: 8px 14px; border-radius: 10px;
-            font-size: 13px; font-weight: 600; cursor: pointer;
+        .btn-modal { 
+            padding: 8px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; 
+            transition: transform 0.1s;
         }
-        .btn--ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--accent-200); }
-        .picker__swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .swatch-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; }
-        .swatch-btn:hover { transform: scale(1.1); }
-        
-        /* 日历 */
-        .cal__head { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700; font-size: 14px; }
-        .cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .cal__day { text-align: center; padding: 6px 0; border-radius: 6px; font-size: 12px; cursor: pointer; }
-        .cal__day:hover { background: var(--track-bg); }
-        .cal__day--sel { background: var(--accent-500); color: #fff; }
+        .btn-modal:active { transform: scale(0.96); }
+        .btn-primary { background: #4cd964; color: #fff; }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--track-bg); }
 
+        /* 颜色选择器 */
+        .picker-preview { height: 40px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.1); transition: background 0.3s; }
+        .picker-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .color-dot { 
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
+            border: 2px solid transparent; box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+            transition: transform 0.2s;
+        }
+        .color-dot:hover { transform: scale(1.1); }
+        .color-dot.active { border-color: #fff; outline: 2px solid var(--text-muted); }
+
+        /* 日历选择器 */
+        .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .cal-title { font-weight: 700; font-size: 16px; }
+        .cal-btn { background: transparent; border: 1px solid var(--track-bg); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: var(--text-main); }
+        
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+        .cal-dow { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .cal-day { 
+            height: 36px; display: flex; align-items: center; justify-content: center; 
+            border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--text-main);
+        }
+        .cal-day:hover { background: var(--track-bg); }
+        .cal-day.selected { background: #4cd964; color: #fff; font-weight: 600; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
         @media (max-width: 400px) {
-            /* 手机屏幕太窄时强制单列，防止破布局 */
             .bento-grid { grid-template-columns: 1fr !important; }
-            .card--main { grid-column: 1 / -1 !important; grid-row: auto !important; flex-direction: row !important; align-items: center; gap:16px; padding: 20px; aspect-ratio: auto !important;}
+            .card--main { grid-column: 1 / -1 !important; grid-row: auto !important; }
             .split-row { grid-column: 1 / -1 !important; }
             .card--clock { grid-column: 1 / -1 !important; }
-            .card--main .hero-bar-container { width: 50%; margin-top:0; }
         }
     </style>
 </head>
 <body>
 
 <div class="widget-container">
-    <!-- data-layout="grid" or "list" -->
     <div class="bento-grid" id="main-grid" data-layout="grid">
-        
-        <!-- 卡片 1: 时钟与控制 -->
+        <!-- 1. 时钟 -->
         <div class="card card--clock">
             <div class="header-ctrls">
-                <!-- 布局切换按钮 -->
-                <button id="btn-layout" class="ctrl-btn" title="切换布局">
-                    <span id="icon-layout" style="font-size:14px; line-height:1">⚏</span>
-                </button>
-                <div style="width:1px; height:16px; background:rgba(128,128,128,0.2); margin:6px 2px;"></div>
-                <button id="btn-primary" class="ctrl-btn ctrl-btn--color" title="主色" style="--bg-swatch: var(--accent-500)"></button>
-                <button id="btn-bg" class="ctrl-btn ctrl-btn--color" title="背景色" style="--bg-swatch: var(--bg-page)"></button>
-                <button id="btn-12w" class="ctrl-btn" title="设置起始日">📅</button>
-                <button id="btn-theme" class="ctrl-btn" title="切换主题">🌗</button>
+                <button id="btn-layout" class="ctrl-btn" title="布局">⚏</button>
+                <button id="btn-primary" class="ctrl-btn ctrl-btn--color" title="主色"></button>
+                <button id="btn-bg" class="ctrl-btn ctrl-btn--color" title="背景"></button>
+                <button id="btn-12w" class="ctrl-btn" title="日期">📅</button>
+                <button id="btn-theme" class="ctrl-btn" title="深色">🌗</button>
             </div>
-            
-            <div style="margin-top: 24px;"> 
-                <div class="card__label">现在</div>
-                <div id="week-badge" class="badge">W1</div>
+            <div class="clock-group">
+                <div class="clock-label-group">
+                    <div class="card__label">Current Time</div>
+                    <div id="week-badge" class="badge">W1</div>
+                </div>
+                <div id="clock" class="clock-display">00:00</div>
             </div>
-            <div id="clock" class="clock-display">00:00</div>
         </div>
 
-        <!-- 卡片 2: 12周核心 -->
+        <!-- 2. 核心卡片 -->
         <div class="card card--main">
-            <div style="min-width: 100px;">
-                <div class="card__label" style="color: rgba(255,255,255,0.7)">12 Week Year</div>
-                <div class="value-text" id="pct-12w">0%</div>
-                <div class="sub-text">第 <span id="weeks-12w-num">0</span>/12 周</div>
+            <div>
+                <div class="card__label">12 Week Year</div>
+                <div class="main-stat" id="pct-12w">0%</div>
+                <div class="card__label" style="color:rgba(255,255,255,0.8); margin-top:4px">
+                    <span id="weeks-12w-num">1</span>/12 周 · 剩 <span id="days-12w-left">0</span> 天
+                </div>
             </div>
             <div class="hero-bar-container">
-                <div class="bar bar--hero">
-                    <div id="bar-12w" class="bar__fill"></div>
-                </div>
-                <div class="days-left">
-                    <span id="days-12w-left">84天</span>
+                <div class="hero-bar">
+                    <div id="bar-12w" class="hero-bar__fill"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 卡片 3 & 4: 底部小统计 -->
+        <!-- 3. 圆环 (新结构) -->
         <div class="split-row">
-            <div class="card card--mini">
-                <div class="card__label">今年</div>
-                <div class="value-text" id="pct-year">0%</div>
-                <div class="bar">
-                    <div id="bar-year" class="bar__fill"></div>
+            <div class="card card--ring">
+                <div class="ring-text-group">
+                    <div class="card__label">Year</div>
+                    <div class="ring-val-pct" id="txt-year">0%</div>
+                    <div class="ring-val-days" id="days-year">剩0天</div>
+                </div>
+                <div class="apple-ring-container">
+                    <div class="apple-ring-track"></div>
+                    <div class="apple-ring-progress" id="ring-progress-year"></div>
+                    <div class="apple-ring-sphere" id="ring-sphere-year"></div>
                 </div>
             </div>
-            <div class="card card--mini">
-                <div class="card__label">本周</div>
-                <div class="value-text" id="pct-week">0%</div>
-                <div class="bar">
-                    <div id="bar-week" class="bar__fill"></div>
+            <div class="card card--ring">
+                <div class="ring-text-group">
+                    <div class="card__label">Week</div>
+                    <div class="ring-val-pct" id="txt-week">0%</div>
+                    <div class="ring-val-days" id="days-week">剩0天</div>
+                </div>
+                <div class="apple-ring-container">
+                    <div class="apple-ring-track"></div>
+                    <div class="apple-ring-progress" id="ring-progress-week"></div>
+                    <div class="apple-ring-sphere" id="ring-sphere-week"></div>
                 </div>
             </div>
-        </div>
-
-        <!-- 底部引用 -->
-        <div class="quote-card">
-            <div id="quote-text" class="quote-text">...</div>
         </div>
     </div>
+
+    <!-- 4. 每日引言 (回归) -->
+    <footer class="quote-card">
+        <p id="quote-text" class="quote-text">Loading...</p>
+    </footer>
 </div>
 
-<!-- Modals -->
-<div id="modal" class="modal" aria-hidden="true"><div class="modal__card" id="cal-modal-content"></div></div>
+<!-- 弹窗 (保持不变) -->
 <div id="modal-primary" class="modal" aria-hidden="true">
     <div class="modal__card">
-        <h3 style="margin:0 0 10px 0; font-size:16px;">选择主色</h3>
-        <input id="picker-primary" type="color" style="width:100%; border:none; height:40px; border-radius:8px;" />
-        <div class="picker__swatches" id="swatches-primary"></div>
-        <div style="text-align:right; margin-top:16px;"><button id="save-primary" class="btn">确定</button></div>
+        <h3 class="modal__title">选择主色</h3>
+        <div id="preview-primary" class="picker-preview" style="background:var(--accent-color)"></div>
+        <div class="picker-grid" id="grid-primary"></div>
+        <div class="modal__actions">
+            <button class="btn-modal btn-ghost" data-close="#modal-primary">取消</button>
+            <button class="btn-modal btn-primary" id="save-primary">确定</button>
+        </div>
     </div>
 </div>
-<div id="modal-card" class="modal" aria-hidden="true">
+<div id="modal-bg" class="modal" aria-hidden="true">
     <div class="modal__card">
-        <h3 style="margin:0 0 10px 0; font-size:16px;">背景色</h3>
-        <input id="picker-card" type="color" style="width:100%; border:none; height:40px; border-radius:8px;" />
-        <div class="picker__swatches" id="swatches-card"></div>
-        <div style="text-align:right; margin-top:16px;"><button id="save-card" class="btn">确定</button></div>
+        <h3 class="modal__title">选择背景色</h3>
+        <div id="preview-bg" class="picker-preview" style="background:var(--bg-page); border:1px solid #eee"></div>
+        <div class="picker-grid" id="grid-bg"></div>
+        <div class="modal__actions">
+            <button class="btn-modal btn-ghost" data-close="#modal-bg">取消</button>
+            <button class="btn-modal btn-primary" id="save-bg">确定</button>
+        </div>
+    </div>
+</div>
+<div id="modal-cal" class="modal" aria-hidden="true">
+    <div class="modal__card">
+        <h3 class="modal__title">设置 12 周起始日</h3>
+        <div class="cal-head">
+            <button class="cal-btn" id="cal-prev">‹</button>
+            <div class="cal-title" id="cal-title"></div>
+            <button class="cal-btn" id="cal-next">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="modal__actions">
+            <button class="btn-modal btn-ghost" data-close="#modal-cal">取消</button>
+            <button class="btn-modal btn-primary" id="save-cal">确定</button>
+        </div>
     </div>
 </div>
 
 <script>
-function two(n){return String(n).padStart(2,'0')}
-function preciseYearProgress(n){
-    const s=new Date(n.getFullYear(),0,1), e=new Date(n.getFullYear()+1,0,1);
-    return ((n-s)/(e-s))*100;
-}
-function preciseWeekProgress(n){
-    const d=(n.getDay()+6)%7, s=new Date(n); s.setHours(0,0,0,0); s.setDate(n.getDate()-d);
-    return ((n-s)/(7*86400000))*100;
-}
-function calc12W(now, start){
-    const s=new Date(start.getFullYear(),start.getMonth(),start.getDate());
-    const e=new Date(s); e.setDate(s.getDate()+84);
-    const pct=Math.max(0,Math.min(1,(now-s)/(e-s)));
-    return {pct:pct*100, w:Math.floor(((now-s)/(7*86400000))+1), d:Math.max(0,Math.ceil((e-now)/86400000))};
-}
+// --- 核心逻辑 ---
+const LS = {
+    get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+};
 
-const LS=localStorage;
-const get=(k,d)=>JSON.parse(LS.getItem(k)||JSON.stringify(d));
-const set=(k,v)=>LS.setItem(k,JSON.stringify(v));
+// 引言数据
+const DEFAULT_QUOTES = [
+    '用12周时间完成1年目标', '成为自己人生的头号玩家', '少即是多，慢即是快',
+    '我想让世界为我惊叹', '你只活一次。使它有意义', '你须寻得你所爱，并为之守望',
+    '学习的本质就是极致的重复', '创意就是把事物联系起来', '把注意力放在可控的事情上'
+];
+let quoteIndex = 0;
+
+function two(n){return String(n).padStart(2,'0')}
+
+// 更新圆环 (新逻辑)
+function updateRing(progressId, sphereId, pct) {
+    const deg = (pct / 100) * 360;
+    const progressEl = document.getElementById(progressId);
+    const sphereEl = document.getElementById(sphereId);
+    
+    if (progressEl && sphereEl) {
+        progressEl.style.setProperty('--deg', `${deg}deg`);
+        sphereEl.style.setProperty('--deg', `${deg}deg`);
+        // 只有进度大于0时才显示进度条和圆球
+        const opacity = pct > 0 ? 1 : 0;
+        progressEl.style.opacity = opacity;
+        sphereEl.style.opacity = opacity;
+    }
+}
 
 function update(){
-    const now=new Date();
+    const now = new Date();
     document.getElementById('clock').textContent = `${two(now.getHours())}:${two(now.getMinutes())}`;
     
-    const startStr = get('start12w', null);
+    // 12 Week Logic
+    const urlParams = new URLSearchParams(window.location.search);
+    const startStr = urlParams.get('start') || LS.get('start12w', null);
     const startDate = startStr ? new Date(startStr) : new Date(now.getFullYear(), now.getMonth(), 1);
-    const tw = calc12W(now, startDate);
     
-    document.getElementById('week-badge').textContent = `W${Math.max(1,Math.min(12,tw.w))}`;
-    document.getElementById('pct-12w').textContent = `${tw.pct.toFixed(0)}%`;
-    document.getElementById('weeks-12w-num').textContent = Math.max(0,Math.min(12,tw.w));
-    document.getElementById('bar-12w').style.width = `${tw.pct}%`;
-    document.getElementById('days-12w-left').textContent = `剩余 ${tw.d} 天`;
+    const s = new Date(startDate.getFullYear(),startDate.getMonth(),startDate.getDate());
+    const e = new Date(s); e.setDate(s.getDate()+84);
+    const totalMs = e-s; 
+    const passed = now-s;
+    let pct12 = Math.max(0, Math.min(1, passed/totalMs)) * 100;
+    
+    document.getElementById('week-badge').textContent = `W${Math.max(1, Math.ceil(passed/(7*86400000)))}`;
+    document.getElementById('pct-12w').textContent = `${pct12.toFixed(1)}%`;
+    document.getElementById('bar-12w').style.width = `${pct12}%`;
+    document.getElementById('weeks-12w-num').textContent = Math.ceil(passed/(7*86400000));
+    document.getElementById('days-12w-left').textContent = Math.max(0, Math.ceil((e-now)/86400000));
+    
+    // Year
+    const yS = new Date(now.getFullYear(),0,1);
+    const yE = new Date(now.getFullYear()+1,0,1);
+    const yPct = Math.max(0, Math.min(100, ((now-yS)/(yE-yS))*100));
+    updateRing('ring-progress-year', 'ring-sphere-year', yPct);
+    document.getElementById('txt-year').textContent = `${yPct.toFixed(0)}%`;
+    document.getElementById('days-year').textContent = `剩${Math.ceil((yE-now)/86400000)}天`;
 
-    const yPct = preciseYearProgress(now);
-    document.getElementById('pct-year').textContent = `${yPct.toFixed(0)}%`;
-    document.getElementById('bar-year').style.width = `${yPct}%`;
-    
-    const wPct = preciseWeekProgress(now);
-    document.getElementById('pct-week').textContent = `${wPct.toFixed(0)}%`;
-    document.getElementById('bar-week').style.width = `${wPct}%`;
+    // Week
+    const d = (now.getDay()+6)%7;
+    const wS = new Date(now); wS.setHours(0,0,0,0); wS.setDate(now.getDate()-d);
+    const wE = new Date(wS); wE.setDate(wS.getDate()+7);
+    const wPct = Math.max(0, Math.min(100, ((now-wS)/(7*86400000))*100));
+    updateRing('ring-progress-week', 'ring-sphere-week', wPct);
+    document.getElementById('txt-week').textContent = `${wPct.toFixed(0)}%`;
+    document.getElementById('days-week').textContent = `剩${Math.max(0, Math.ceil((wE-now)/86400000))}天`;
+}
+
+function applySettings(theme) {
+    const pColor = LS.get(`primary:${theme}`, '#ff2d55');
+    document.documentElement.style.setProperty('--accent-color', pColor);
+    document.getElementById('btn-primary').style.setProperty('--bg-swatch', pColor);
+
+    const bgVal = LS.get(`bg:${theme}`, theme==='dark'?'#000000':'transparent');
+    document.documentElement.style.setProperty('--bg-page', bgVal);
+    document.getElementById('btn-bg').style.setProperty('--bg-swatch', bgVal);
+}
+
+// --- 弹窗逻辑 (保持不变) ---
+const COLORS = ['#ff2d55', '#ff9500', '#ffcc00', '#4cd964', '#5ac8fa', '#007aff', '#5856d6', '#ff3b30', '#8e8e93', '#333333'];
+const BG_COLORS = ['transparent', '#ffffff', '#f2f2f7', '#e5e5e5', '#000000', '#1c1c1e', '#2c2c2e'];
+
+function renderColorGrid(gridId, colors, currentVal, previewId) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    let selected = currentVal;
+    colors.forEach(c => {
+        const dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.background = c;
+        if(c === 'transparent') dot.style.backgroundImage = 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
+        if(c === selected) dot.classList.add('active');
+        dot.onclick = () => {
+            selected = c; document.getElementById(previewId).style.background = c;
+            grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active')); dot.classList.add('active');
+        };
+        grid.appendChild(dot);
+    });
+    return () => selected;
+}
+
+let calDate = new Date();
+function renderCalendar() {
+    const title = document.getElementById('cal-title'); const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
+    title.textContent = `${calDate.getFullYear()}.${two(calDate.getMonth()+1)}`;
+    ['一','二','三','四','五','六','日'].forEach(d => { const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
+    const firstDay = new Date(calDate.getFullYear(), calDate.getMonth(), 1);
+    const startIdx = (firstDay.getDay() + 6) % 7; 
+    const daysInMonth = new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate();
+    for(let i=0; i<startIdx; i++) grid.appendChild(document.createElement('div'));
+    const savedStr = LS.get('start12w', ''); const savedDate = savedStr ? new Date(savedStr) : new Date();
+    for(let d=1; d<=daysInMonth; d++) {
+        const el = document.createElement('div'); el.className = 'cal-day'; el.textContent = d;
+        if(calDate.getFullYear()===savedDate.getFullYear() && calDate.getMonth()===savedDate.getMonth() && savedDate.getDate()===d) el.classList.add('selected');
+        el.onclick = () => {
+            savedDate.setFullYear(calDate.getFullYear(), calDate.getMonth(), d);
+            LS.set('start12w', `${savedDate.getFullYear()}-${two(savedDate.getMonth()+1)}-${two(savedDate.getDate())}`);
+            renderCalendar();
+        };
+        grid.appendChild(el);
+    }
 }
 
 window.addEventListener('DOMContentLoaded', ()=>{
-    const theme = get('theme', 'light');
+    const theme = LS.get('theme', 'light');
     document.documentElement.setAttribute('data-theme', theme);
-    
-    const apply=(k,v,prop,btnId)=>{
-        document.documentElement.style.setProperty(prop,v);
-        const b=document.getElementById(btnId); if(b) b.style.setProperty('--bg-swatch',v);
-    };
-    apply('primary', get(`primary:${theme}`, '#6b7280'), '--accent-500', 'btn-primary');
-    apply('bg', get(`canvas:${theme}`, theme==='dark'?'transparent':'transparent'), '--bg-page', 'btn-bg');
+    applySettings(theme);
 
-    // 布局切换逻辑
-    const gridEl = document.getElementById('main-grid');
-    const layoutBtn = document.getElementById('btn-layout');
-    const layoutIcon = document.getElementById('icon-layout');
-    
-    let curLayout = get('layout', 'grid'); // 默认为 grid
-    const applyLayout = (l) => {
-        gridEl.setAttribute('data-layout', l);
-        // 图标：如果是 grid 显示“变清单”，如果是 list 显示“变网格”
-        layoutIcon.innerHTML = l === 'grid' ? '⚏' : '☷'; 
-        set('layout', l);
-    };
-    applyLayout(curLayout);
+    const grid = document.getElementById('main-grid'); const lBtn = document.getElementById('btn-layout');
+    let l = LS.get('layout', 'grid'); grid.setAttribute('data-layout', l);
+    lBtn.onclick = () => { l = l==='grid'?'list':'grid'; grid.setAttribute('data-layout', l); LS.set('layout', l); };
 
-    layoutBtn.onclick = () => {
-        const next = gridEl.getAttribute('data-layout') === 'grid' ? 'list' : 'grid';
-        applyLayout(next);
+    const openModal = (id) => document.getElementById(id).setAttribute('aria-hidden', 'false');
+    const closeModal = (id) => document.getElementById(id).setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.getAttribute('data-close')));
+
+    let getSelectedPrimary;
+    document.getElementById('btn-primary').onclick = () => {
+        const t = document.documentElement.getAttribute('data-theme'); const cur = LS.get(`primary:${t}`, '#ff2d55');
+        document.getElementById('preview-primary').style.background = cur;
+        getSelectedPrimary = renderColorGrid('grid-primary', COLORS, cur, 'preview-primary'); openModal('modal-primary');
+    };
+    document.getElementById('save-primary').onclick = () => {
+        const val = getSelectedPrimary(); const t = document.documentElement.getAttribute('data-theme');
+        LS.set(`primary:${t}`, val); applySettings(t); closeModal('modal-primary');
     };
 
-    document.getElementById('btn-theme').onclick=()=>{
-        const newT = document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
-        document.documentElement.setAttribute('data-theme', newT);
-        set('theme', newT);
-        apply('primary', get(`primary:${newT}`, '#6b7280'), '--accent-500', 'btn-primary');
+    let getSelectedBg;
+    document.getElementById('btn-bg').onclick = () => {
+        const t = document.documentElement.getAttribute('data-theme'); const cur = LS.get(`bg:${t}`, 'transparent');
+        document.getElementById('preview-bg').style.background = cur;
+        getSelectedBg = renderColorGrid('grid-bg', BG_COLORS, cur, 'preview-bg'); openModal('modal-bg');
+    };
+    document.getElementById('save-bg').onclick = () => {
+        const val = getSelectedBg(); const t = document.documentElement.getAttribute('data-theme');
+        LS.set(`bg:${t}`, val); applySettings(t); closeModal('modal-bg');
     };
 
-    const bindPicker = (modalId, pickerId, btnId, saveId, keyPrefix, prop, swatchDiv) => {
-        document.getElementById(btnId).onclick = () => {
-            const m = document.getElementById(modalId); m.setAttribute('aria-hidden','false');
-            const curTheme = document.documentElement.getAttribute('data-theme');
-            const val = get(`${keyPrefix}:${curTheme}`, '#6b7280');
-            document.getElementById(pickerId).value = val;
-            const sDiv = document.getElementById(swatchDiv); sDiv.innerHTML='';
-            ['#ef4444','#f97316','#f59e0b','#22c55e','#06b6d4','#3b82f6','#a855f7','#64748b','#1f2937'].forEach(c=>{
-                const b=document.createElement('button'); b.className='swatch-btn'; b.style.background=c;
-                b.onclick=()=>{document.getElementById(pickerId).value=c;}; sDiv.appendChild(b);
-            });
-        };
-        document.getElementById(saveId).onclick = () => {
-            const val = document.getElementById(pickerId).value;
-            const curTheme = document.documentElement.getAttribute('data-theme');
-            set(`${keyPrefix}:${curTheme}`, val);
-            document.documentElement.style.setProperty(prop, val);
-            document.getElementById(btnId).style.setProperty('--bg-swatch',val);
-            document.getElementById(modalId).setAttribute('aria-hidden','true');
-        };
+    document.getElementById('btn-12w').onclick = () => {
+        const savedStr = LS.get('start12w', ''); calDate = savedStr ? new Date(savedStr) : new Date();
+        renderCalendar(); openModal('modal-cal');
     };
-    bindPicker('modal-primary', 'picker-primary', 'btn-primary', 'save-primary', 'primary', '--accent-500', 'swatches-primary');
-    bindPicker('modal-card', 'picker-card', 'btn-bg', 'save-card', 'canvas', '--bg-page', 'swatches-card');
+    document.getElementById('cal-prev').onclick = () => { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
+    document.getElementById('cal-next').onclick = () => { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
+    document.getElementById('save-cal').onclick = () => { update(); closeModal('modal-cal'); };
 
-    let calD = get('start12w', null) ? new Date(get('start12w')) : new Date();
-    const renderCal = () => {
-        const c = document.getElementById('cal-modal-content'); c.innerHTML='';
-        const head = document.createElement('div'); head.className='cal__head';
-        head.innerHTML=`<span id="cp" style="cursor:pointer;padding:4px">‹</span> <span>${calD.getFullYear()}.${calD.getMonth()+1}</span> <span id="cn" style="cursor:pointer;padding:4px">›</span>`;
-        c.appendChild(head);
-        const g = document.createElement('div'); g.className='cal__grid';
-        ['一','二','三','四','五','六','日'].forEach(t=>{const d=document.createElement('div');d.innerText=t;d.style.color='#999';d.style.textAlign='center';d.style.fontSize='12px';g.appendChild(d)});
-        const f = new Date(calD.getFullYear(), calD.getMonth(), 1);
-        for(let i=0; i<(f.getDay()+6)%7; i++) g.appendChild(document.createElement('div'));
-        const days = new Date(calD.getFullYear(), calD.getMonth()+1, 0).getDate();
-        for(let i=1; i<=days; i++){
-            const d=document.createElement('div'); d.className='cal__day'; d.innerText=i;
-            if(calD.getDate()===i) d.classList.add('cal__day--sel');
-            d.onclick=()=>{calD.setDate(i); renderCal();}; g.appendChild(d);
-        }
-        c.appendChild(g);
-        const acts = document.createElement('div'); acts.style.cssText='display:flex;justify-content:flex-end;gap:10px;margin-top:16px';
-        acts.innerHTML=`<button class="btn btn--ghost" id="cc">取消</button><button class="btn" id="cs">确定</button>`;
-        c.appendChild(acts);
-        c.querySelector('#cp').onclick=()=>{calD.setMonth(calD.getMonth()-1);renderCal()};
-        c.querySelector('#cn').onclick=()=>{calD.setMonth(calD.getMonth()+1);renderCal()};
-        c.querySelector('#cc').onclick=()=>{document.getElementById('modal').setAttribute('aria-hidden','true')};
-        c.querySelector('#cs').onclick=()=>{
-            set('start12w', `${calD.getFullYear()}-${two(calD.getMonth()+1)}-${two(calD.getDate())}`);
-            update(); document.getElementById('modal').setAttribute('aria-hidden','true');
-        };
+    document.getElementById('btn-theme').onclick = () => {
+        const cur = document.documentElement.getAttribute('data-theme'); const next = cur==='light'?'dark':'light';
+        document.documentElement.setAttribute('data-theme', next); LS.set('theme', next); applySettings(next);
     };
-    document.getElementById('btn-12w').onclick=()=>{ document.getElementById('modal').setAttribute('aria-hidden','false'); renderCal(); };
-    
-    const qs = get('quotes', ['少即是多，慢即是快','Focus on what matters.','用12周完成1年目标']);
-    let qi = 0;
-    setInterval(()=>{ document.getElementById('quote-text').textContent = qs[++qi % qs.length]; }, 8000);
-    document.getElementById('quote-text').textContent = qs[0];
+
+    // 引言轮播
+    const quotes = LS.get('quotes', DEFAULT_QUOTES);
+    const qEl = document.getElementById('quote-text');
+    const setQuote = () => {
+        qEl.style.opacity = 0;
+        setTimeout(() => { qEl.textContent = quotes[quoteIndex % quotes.length]; qEl.style.opacity = 0.8; }, 500);
+    };
+    setQuote();
+    setInterval(() => { quoteIndex = (quoteIndex + 1) % quotes.length; setQuote(); }, 8000);
 
     update(); setInterval(update, 1000);
 });
