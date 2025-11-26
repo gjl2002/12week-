@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>12-Week Adaptive Bento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 基础色盘 */
+            --accent-100: #e5e7eb;
+            --accent-200: #d1d5db;
+            --accent-400: #9ca3af;
+            --accent-500: #6b7280; /* 默认主色 */
+            
+            /* 文字颜色 */
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --text-on-accent: #ffffff;
+
+            /* 背景体系 */
+            --bg-page: transparent; 
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-hover: rgba(255, 255, 255, 0.95);
+            --border-card: rgba(255, 255, 255, 0.6);
+            --glass-blur: blur(12px);
+            
+            /* 进度条轨道 */
+            --track-bg: rgba(0, 0, 0, 0.06);
+
+            /* 阴影 */
+            --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.06);
+            
+            /* 变量 */
+            --gap: 12px;
+            --radius: 22px;
+            --pad: 18px;
+        }
+
+        /* 深色模式变量 */
+        :root[data-theme="dark"] {
+            --bg-page: transparent;
+            --bg-card: rgba(30, 30, 30, 0.7);
+            --bg-card-hover: rgba(45, 45, 45, 0.85);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --text-main: #f5f5f7;
+            --text-muted: #98989d;
+            --track-bg: rgba(255, 255, 255, 0.15);
+            --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center; justify-content: center;
+            background: var(--bg-page);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-main);
+            padding: 10px; 
+            overflow: hidden; 
+        }
+
+        /* --- 核心容器 --- */
+        .widget-container {
+            width: 100%;
+            max-width: 600px;
+            transition: max-width 0.3s ease;
+        }
+
+        /* 默认双列网格 */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr; 
+            grid-template-rows: auto auto; 
+            gap: var(--gap);
+            transition: all 0.3s ease;
+        }
+
+        /* --- 单列模式 (List View) --- */
+        .bento-grid[data-layout="list"] {
+            grid-template-columns: 1fr; /* 强制单列 */
+            gap: 10px;
+        }
+
+        /* --- 卡片样式 --- */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius);
+            padding: var(--pad);
+            box-shadow: var(--shadow-card);
+            transition: transform 0.2s ease, background 0.3s ease, grid-column 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover { transform: translateY(-1px); background: var(--bg-card-hover); }
+
+        .card__label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .value-text { font-weight: 700; font-size: 20px; color: var(--text-main); line-height: 1.2; }
+
+        /* --- 控制区优化 (修复方块问题) --- */
+        .card--clock {
+            grid-column: 1 / 2;
+            justify-content: space-between;
+        }
+        /* 单列模式下，时钟卡占满 */
+        .bento-grid[data-layout="list"] .card--clock { grid-column: 1 / -1; }
+
+        .clock-display {
+            font-size: clamp(32px, 8vw, 44px);
+            font-weight: 800; font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em; line-height: 1; margin-top: 12px;
+            color: var(--text-main);
+        }
+
+        .header-ctrls {
+            display: flex; gap: 8px; position: absolute; top: 16px; right: 16px; z-index: 10;
+        }
+        
+        .ctrl-btn {
+            width: 28px; height: 28px;
+            border-radius: 50%; /* 强制圆形 */
+            border: 1px solid rgba(0,0,0,0.08); /* 增加描边防止融入背景 */
+            background: rgba(128,128,128, 0.1);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: var(--text-muted); padding: 0;
+            transition: all 0.2s;
+        }
+        .ctrl-btn:hover { transform: scale(1.05); background: rgba(128,128,128, 0.15); color: var(--text-main); }
+        
+        /* 颜色按钮修复：直接使用背景色，不再用 pseudo-element */
+        .ctrl-btn--color {
+            background-color: var(--bg-swatch) !important;
+            border: 1.5px solid rgba(255,255,255,0.4); /* 内部光泽 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15); /* 外部投影 */
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; padding: 2px 8px;
+            border-radius: 6px; background: var(--track-bg); color: var(--text-main);
+            font-size: 11px; font-weight: 600; margin-top: 2px;
+        }
+
+        /* --- 12周核心卡片 --- */
+        .card--main {
+            grid-column: 2 / 3; grid-row: 1 / 3; 
+            background: var(--accent-500); color: #fff; border: none; justify-content: space-between;
+            overflow: hidden;
+        }
+        
+        /* 单列模式下，主卡片变矮变宽 */
+        .bento-grid[data-layout="list"] .card--main {
+            grid-column: 1 / -1; /* 占满一行 */
+            grid-row: auto;
+            aspect-ratio: auto;
+            padding: 20px;
+            flex-direction: row; /* 横向排列内容 */
+            align-items: center;
+            gap: 16px;
+        }
+        /* 单列模式下的主卡片内部布局调整 */
+        .bento-grid[data-layout="list"] .card--main > div:first-child { flex: 1; }
+        .bento-grid[data-layout="list"] .card--main .hero-bar-container { width: 50%; margin-top: 0; }
+
+        .card--main .card__label { color: rgba(255,255,255, 0.7); }
+        .card--main .value-text { color: #fff; font-size: clamp(32px, 9vw, 52px); line-height: 1; margin-top: 4px; }
+        .card--main .sub-text { color: rgba(255,255,255, 0.9); font-size: 12px; font-weight: 500; }
+        
+        .card--main::before {
+            content: ''; position: absolute; top: -30%; right: -30%; width: 140px; height: 140px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
+            filter: blur(35px); border-radius: 50%; pointer-events: none;
+        }
+
+        .hero-bar-container { margin-top: auto; }
+        .bar--hero {
+            height: 12px; background: rgba(0,0,0, 0.2); border-radius: 99px; overflow: hidden; position: relative;
+        }
+        .bar--hero .bar__fill {
+            height: 100%; width: 0%; background: #fff; border-radius: 99px; transition: width 1s ease;
+        }
+        .days-left { text-align: right; font-size: 11px; margin-top: 6px; opacity: 0.9; font-weight: 500; }
+
+        /* --- 底部小统计 --- */
+        .split-row {
+            grid-column: 1 / 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+        }
+        /* 单列模式下，底部依然保持并排 */
+        .bento-grid[data-layout="list"] .split-row { grid-column: 1 / -1; }
+
+        .card--mini {
+            padding: var(--pad); justify-content: flex-end; aspect-ratio: auto; min-height: 90px;
+        }
+        .card--mini .value-text { font-size: 22px; }
+
+        .bar {
+            height: 6px; width: 100%; background: var(--track-bg); border-radius: 99px; margin-top: 10px; overflow: hidden;
+        }
+        .bar__fill {
+            height: 100%; width: 0%; background: var(--accent-500); border-radius: 99px; transition: width 0.6s ease;
+        }
+
+        /* --- 引用 --- */
+        .quote-card {
+            grid-column: 1 / -1; text-align: center; padding: 4px 0 0 0; 
+            background: transparent; border: none; box-shadow: none; backdrop-filter: none;
+        }
+        .quote-text {
+            font-size: 12px; color: var(--text-muted); opacity: 0.8; font-style: italic;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+            display: none; align-items: center; justify-content: center; z-index: 100;
+        }
+        .modal[aria-hidden="false"] { display: flex; }
+        .modal__card {
+            background: var(--bg-card); padding: 20px; border-radius: 18px;
+            width: 85%; max-width: 320px; box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            color: var(--text-main); border: 1px solid var(--border-card);
+        }
+        
+        .btn {
+            background: var(--accent-500); color: #fff; border: none; padding: 8px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .btn--ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--accent-200); }
+        .picker__swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .swatch-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; }
+        .swatch-btn:hover { transform: scale(1.1); }
+        
+        /* 日历 */
+        .cal__head { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 700; font-size: 14px; }
+        .cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal__day { text-align: center; padding: 6px 0; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .cal__day:hover { background: var(--track-bg); }
+        .cal__day--sel { background: var(--accent-500); color: #fff; }
+
+        @media (max-width: 400px) {
+            /* 手机屏幕太窄时强制单列，防止破布局 */
+            .bento-grid { grid-template-columns: 1fr !important; }
+            .card--main { grid-column: 1 / -1 !important; grid-row: auto !important; flex-direction: row !important; align-items: center; gap:16px; padding: 20px; aspect-ratio: auto !important;}
+            .split-row { grid-column: 1 / -1 !important; }
+            .card--clock { grid-column: 1 / -1 !important; }
+            .card--main .hero-bar-container { width: 50%; margin-top:0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget-container">
+    <!-- data-layout="grid" or "list" -->
+    <div class="bento-grid" id="main-grid" data-layout="grid">
+        
+        <!-- 卡片 1: 时钟与控制 -->
+        <div class="card card--clock">
+            <div class="header-ctrls">
+                <!-- 布局切换按钮 -->
+                <button id="btn-layout" class="ctrl-btn" title="切换布局">
+                    <span id="icon-layout" style="font-size:14px; line-height:1">⚏</span>
+                </button>
+                <div style="width:1px; height:16px; background:rgba(128,128,128,0.2); margin:6px 2px;"></div>
+                <button id="btn-primary" class="ctrl-btn ctrl-btn--color" title="主色" style="--bg-swatch: var(--accent-500)"></button>
+                <button id="btn-bg" class="ctrl-btn ctrl-btn--color" title="背景色" style="--bg-swatch: var(--bg-page)"></button>
+                <button id="btn-12w" class="ctrl-btn" title="设置起始日">📅</button>
+                <button id="btn-theme" class="ctrl-btn" title="切换主题">🌗</button>
+            </div>
+            
+            <div style="margin-top: 24px;"> 
+                <div class="card__label">现在</div>
+                <div id="week-badge" class="badge">W1</div>
+            </div>
+            <div id="clock" class="clock-display">00:00</div>
+        </div>
+
+        <!-- 卡片 2: 12周核心 -->
+        <div class="card card--main">
+            <div style="min-width: 100px;">
+                <div class="card__label" style="color: rgba(255,255,255,0.7)">12 Week Year</div>
+                <div class="value-text" id="pct-12w">0%</div>
+                <div class="sub-text">第 <span id="weeks-12w-num">0</span>/12 周</div>
+            </div>
+            <div class="hero-bar-container">
+                <div class="bar bar--hero">
+                    <div id="bar-12w" class="bar__fill"></div>
+                </div>
+                <div class="days-left">
+                    <span id="days-12w-left">84天</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片 3 & 4: 底部小统计 -->
+        <div class="split-row">
+            <div class="card card--mini">
+                <div class="card__label">今年</div>
+                <div class="value-text" id="pct-year">0%</div>
+                <div class="bar">
+                    <div id="bar-year" class="bar__fill"></div>
+                </div>
+            </div>
+            <div class="card card--mini">
+                <div class="card__label">本周</div>
+                <div class="value-text" id="pct-week">0%</div>
+                <div class="bar">
+                    <div id="bar-week" class="bar__fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部引用 -->
+        <div class="quote-card">
+            <div id="quote-text" class="quote-text">...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="modal" class="modal" aria-hidden="true"><div class="modal__card" id="cal-modal-content"></div></div>
+<div id="modal-primary" class="modal" aria-hidden="true">
+    <div class="modal__card">
+        <h3 style="margin:0 0 10px 0; font-size:16px;">选择主色</h3>
+        <input id="picker-primary" type="color" style="width:100%; border:none; height:40px; border-radius:8px;" />
+        <div class="picker__swatches" id="swatches-primary"></div>
+        <div style="text-align:right; margin-top:16px;"><button id="save-primary" class="btn">确定</button></div>
+    </div>
+</div>
+<div id="modal-card" class="modal" aria-hidden="true">
+    <div class="modal__card">
+        <h3 style="margin:0 0 10px 0; font-size:16px;">背景色</h3>
+        <input id="picker-card" type="color" style="width:100%; border:none; height:40px; border-radius:8px;" />
+        <div class="picker__swatches" id="swatches-card"></div>
+        <div style="text-align:right; margin-top:16px;"><button id="save-card" class="btn">确定</button></div>
+    </div>
+</div>
+
+<script>
+function two(n){return String(n).padStart(2,'0')}
+function preciseYearProgress(n){
+    const s=new Date(n.getFullYear(),0,1), e=new Date(n.getFullYear()+1,0,1);
+    return ((n-s)/(e-s))*100;
+}
+function preciseWeekProgress(n){
+    const d=(n.getDay()+6)%7, s=new Date(n); s.setHours(0,0,0,0); s.setDate(n.getDate()-d);
+    return ((n-s)/(7*86400000))*100;
+}
+function calc12W(now, start){
+    const s=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+    const e=new Date(s); e.setDate(s.getDate()+84);
+    const pct=Math.max(0,Math.min(1,(now-s)/(e-s)));
+    return {pct:pct*100, w:Math.floor(((now-s)/(7*86400000))+1), d:Math.max(0,Math.ceil((e-now)/86400000))};
+}
+
+const LS=localStorage;
+const get=(k,d)=>JSON.parse(LS.getItem(k)||JSON.stringify(d));
+const set=(k,v)=>LS.setItem(k,JSON.stringify(v));
+
+function update(){
+    const now=new Date();
+    document.getElementById('clock').textContent = `${two(now.getHours())}:${two(now.getMinutes())}`;
+    
+    const startStr = get('start12w', null);
+    const startDate = startStr ? new Date(startStr) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const tw = calc12W(now, startDate);
+    
+    document.getElementById('week-badge').textContent = `W${Math.max(1,Math.min(12,tw.w))}`;
+    document.getElementById('pct-12w').textContent = `${tw.pct.toFixed(0)}%`;
+    document.getElementById('weeks-12w-num').textContent = Math.max(0,Math.min(12,tw.w));
+    document.getElementById('bar-12w').style.width = `${tw.pct}%`;
+    document.getElementById('days-12w-left').textContent = `剩余 ${tw.d} 天`;
+
+    const yPct = preciseYearProgress(now);
+    document.getElementById('pct-year').textContent = `${yPct.toFixed(0)}%`;
+    document.getElementById('bar-year').style.width = `${yPct}%`;
+    
+    const wPct = preciseWeekProgress(now);
+    document.getElementById('pct-week').textContent = `${wPct.toFixed(0)}%`;
+    document.getElementById('bar-week').style.width = `${wPct}%`;
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+    const theme = get('theme', 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    const apply=(k,v,prop,btnId)=>{
+        document.documentElement.style.setProperty(prop,v);
+        const b=document.getElementById(btnId); if(b) b.style.setProperty('--bg-swatch',v);
+    };
+    apply('primary', get(`primary:${theme}`, '#6b7280'), '--accent-500', 'btn-primary');
+    apply('bg', get(`canvas:${theme}`, theme==='dark'?'transparent':'transparent'), '--bg-page', 'btn-bg');
+
+    // 布局切换逻辑
+    const gridEl = document.getElementById('main-grid');
+    const layoutBtn = document.getElementById('btn-layout');
+    const layoutIcon = document.getElementById('icon-layout');
+    
+    let curLayout = get('layout', 'grid'); // 默认为 grid
+    const applyLayout = (l) => {
+        gridEl.setAttribute('data-layout', l);
+        // 图标：如果是 grid 显示“变清单”，如果是 list 显示“变网格”
+        layoutIcon.innerHTML = l === 'grid' ? '⚏' : '☷'; 
+        set('layout', l);
+    };
+    applyLayout(curLayout);
+
+    layoutBtn.onclick = () => {
+        const next = gridEl.getAttribute('data-layout') === 'grid' ? 'list' : 'grid';
+        applyLayout(next);
+    };
+
+    document.getElementById('btn-theme').onclick=()=>{
+        const newT = document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+        document.documentElement.setAttribute('data-theme', newT);
+        set('theme', newT);
+        apply('primary', get(`primary:${newT}`, '#6b7280'), '--accent-500', 'btn-primary');
+    };
+
+    const bindPicker = (modalId, pickerId, btnId, saveId, keyPrefix, prop, swatchDiv) => {
+        document.getElementById(btnId).onclick = () => {
+            const m = document.getElementById(modalId); m.setAttribute('aria-hidden','false');
+            const curTheme = document.documentElement.getAttribute('data-theme');
+            const val = get(`${keyPrefix}:${curTheme}`, '#6b7280');
+            document.getElementById(pickerId).value = val;
+            const sDiv = document.getElementById(swatchDiv); sDiv.innerHTML='';
+            ['#ef4444','#f97316','#f59e0b','#22c55e','#06b6d4','#3b82f6','#a855f7','#64748b','#1f2937'].forEach(c=>{
+                const b=document.createElement('button'); b.className='swatch-btn'; b.style.background=c;
+                b.onclick=()=>{document.getElementById(pickerId).value=c;}; sDiv.appendChild(b);
+            });
+        };
+        document.getElementById(saveId).onclick = () => {
+            const val = document.getElementById(pickerId).value;
+            const curTheme = document.documentElement.getAttribute('data-theme');
+            set(`${keyPrefix}:${curTheme}`, val);
+            document.documentElement.style.setProperty(prop, val);
+            document.getElementById(btnId).style.setProperty('--bg-swatch',val);
+            document.getElementById(modalId).setAttribute('aria-hidden','true');
+        };
+    };
+    bindPicker('modal-primary', 'picker-primary', 'btn-primary', 'save-primary', 'primary', '--accent-500', 'swatches-primary');
+    bindPicker('modal-card', 'picker-card', 'btn-bg', 'save-card', 'canvas', '--bg-page', 'swatches-card');
+
+    let calD = get('start12w', null) ? new Date(get('start12w')) : new Date();
+    const renderCal = () => {
+        const c = document.getElementById('cal-modal-content'); c.innerHTML='';
+        const head = document.createElement('div'); head.className='cal__head';
+        head.innerHTML=`<span id="cp" style="cursor:pointer;padding:4px">‹</span> <span>${calD.getFullYear()}.${calD.getMonth()+1}</span> <span id="cn" style="cursor:pointer;padding:4px">›</span>`;
+        c.appendChild(head);
+        const g = document.createElement('div'); g.className='cal__grid';
+        ['一','二','三','四','五','六','日'].forEach(t=>{const d=document.createElement('div');d.innerText=t;d.style.color='#999';d.style.textAlign='center';d.style.fontSize='12px';g.appendChild(d)});
+        const f = new Date(calD.getFullYear(), calD.getMonth(), 1);
+        for(let i=0; i<(f.getDay()+6)%7; i++) g.appendChild(document.createElement('div'));
+        const days = new Date(calD.getFullYear(), calD.getMonth()+1, 0).getDate();
+        for(let i=1; i<=days; i++){
+            const d=document.createElement('div'); d.className='cal__day'; d.innerText=i;
+            if(calD.getDate()===i) d.classList.add('cal__day--sel');
+            d.onclick=()=>{calD.setDate(i); renderCal();}; g.appendChild(d);
+        }
+        c.appendChild(g);
+        const acts = document.createElement('div'); acts.style.cssText='display:flex;justify-content:flex-end;gap:10px;margin-top:16px';
+        acts.innerHTML=`<button class="btn btn--ghost" id="cc">取消</button><button class="btn" id="cs">确定</button>`;
+        c.appendChild(acts);
+        c.querySelector('#cp').onclick=()=>{calD.setMonth(calD.getMonth()-1);renderCal()};
+        c.querySelector('#cn').onclick=()=>{calD.setMonth(calD.getMonth()+1);renderCal()};
+        c.querySelector('#cc').onclick=()=>{document.getElementById('modal').setAttribute('aria-hidden','true')};
+        c.querySelector('#cs').onclick=()=>{
+            set('start12w', `${calD.getFullYear()}-${two(calD.getMonth()+1)}-${two(calD.getDate())}`);
+            update(); document.getElementById('modal').setAttribute('aria-hidden','true');
+        };
+    };
+    document.getElementById('btn-12w').onclick=()=>{ document.getElementById('modal').setAttribute('aria-hidden','false'); renderCal(); };
+    
+    const qs = get('quotes', ['少即是多，慢即是快','Focus on what matters.','用12周完成1年目标']);
+    let qi = 0;
+    setInterval(()=>{ document.getElementById('quote-text').textContent = qs[++qi % qs.length]; }, 8000);
+    document.getElementById('quote-text').textContent = qs[0];
+
+    update(); setInterval(update, 1000);
+});
+</script>
+</body>
+</html>
