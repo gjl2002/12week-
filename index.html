@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>12-Week Fitness Final (Fixed)</title>
+    <title>12-Week Fitness V6</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@
             --border-card: rgba(0, 0, 0, 0.06);
             --glass-blur: blur(24px);
             
-            /* 轨道颜色 (更淡、更细) */
+            /* 轨道颜色 */
             --track-bg: rgba(0, 0, 0, 0.08);
 
             /* 阴影 */
@@ -87,7 +87,7 @@
         }
         .card:hover { transform: translateY(-2px); background: var(--bg-card-hover); }
 
-        /* 1. 控制栏 */
+        /* 控制栏 */
         .header-ctrls {
             display: flex; gap: 8px; position: absolute; top: 18px; right: 18px; z-index: 50;
             opacity: 0.3; transition: opacity 0.2s; 
@@ -104,7 +104,7 @@
         .ctrl-btn:hover { transform: scale(1.1); background: var(--accent-color); color: #fff; }
         .ctrl-btn--color { background-color: var(--bg-swatch) !important; border: 1px solid rgba(0,0,0,0.1); }
 
-        /* 2. 时钟卡片 */
+        /* 时钟卡片 */
         .card--clock { grid-column: 1 / 2; justify-content: space-between; min-height: 130px; }
         .bento-grid[data-layout="list"] .card--clock { grid-column: 1 / -1; min-height: auto; flex-direction: row; align-items: center; padding-right: 150px; }
         
@@ -120,7 +120,7 @@
         .bento-grid[data-layout="list"] .clock-display { margin-top: 0; font-size: 36px; }
         .bento-grid[data-layout="list"] .clock-group { display: flex; align-items: center; gap: 16px; }
 
-        /* 3. 核心进度 */
+        /* 核心进度 */
         .card--main {
             grid-column: 2 / 3; grid-row: 1 / 3; 
             background: var(--accent-color);
@@ -136,7 +136,7 @@
         .hero-bar__fill { height: 100%; width: 0%; background: #fff; border-radius: 99px; transition: width 1s ease; }
         .bento-grid[data-layout="list"] .hero-bar-container { flex: 1; min-width: 0; }
 
-        /* 4. 圆环区域 (Hover 交互) */
+        /* 圆环区域 */
         .split-row { grid-column: 1 / 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
         .bento-grid[data-layout="list"] .split-row { grid-column: 1 / -1; }
 
@@ -154,89 +154,71 @@
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 5. 全新圆环结构 (修复对齐与透明问题) --- */
-        .apple-ring-container {
-            position: relative; width: 52px; height: 52px;
-        }
-        /* 轨道环 */
-        .apple-ring-track {
-            position: absolute; inset: 0; border-radius: 50%;
-            border: 5px solid var(--track-bg);
-        }
-        /* 进度环 */
+        /* 圆环结构 (完美对齐) */
+        .apple-ring-container { position: relative; width: 52px; height: 52px; }
+        .apple-ring-track { position: absolute; inset: 0; border-radius: 50%; border: 5px solid var(--track-bg); }
         .apple-ring-progress {
             position: absolute; inset: 0; border-radius: 50%;
             background: conic-gradient(var(--accent-color) var(--deg), transparent 0deg);
-            /* 使用 mask 镂空中心 */
             -webkit-mask: radial-gradient(transparent 60%, black 62%);
             mask: radial-gradient(transparent 60%, black 62%);
             opacity: 0; transition: opacity 0.3s;
         }
-        /* 圆球 (完美对齐) */
         .apple-ring-sphere {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 5px; height: 5px;
-            margin: -2.5px 0 0 -2.5px; /* 自身居中 */
-            background: var(--accent-color);
-            border-radius: 50%;
-            box-shadow: 0 0 2px rgba(0,0,0,0.15);
-            /* 先旋转角度，再向外平移半径距离 (52px/2 - 5px/2 = 23.5px) */
-            transform: rotate(var(--deg)) translateY(-23.5px);
-            opacity: 0; transition: opacity 0.3s;
+            position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+            background: var(--accent-color); border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,0.15);
+            transform: rotate(var(--deg)) translateY(-23.5px); opacity: 0; transition: opacity 0.3s;
         }
 
-        /* --- 6. 每日引言 (回归) --- */
-        .quote-card {
-            text-align: center; padding: 8px 0;
-        }
-        .quote-text {
-            font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0; opacity: 0.8;
-            transition: opacity 0.5s;
-        }
+        /* 每日引言 */
+        .quote-card { text-align: center; padding: 8px 0; }
+        .quote-text { font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0; opacity: 0.8; transition: opacity 0.5s; }
 
-        /* --- 弹窗样式 --- */
+        /* 弹窗样式 */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
         .modal[aria-hidden="false"] { display: flex; animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-        .modal__card { 
-            background: var(--modal-bg); 
-            padding: 24px; border-radius: 20px; 
-            width: 340px; max-width: 90vw;
-            box-shadow: var(--modal-shadow); 
-        }
+        .modal__card { background: var(--modal-bg); padding: 24px; border-radius: 20px; width: 340px; max-width: 90vw; box-shadow: var(--modal-shadow); }
         .modal__title { margin: 0 0 16px 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
         .modal__actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
         
-        .btn-modal { 
-            padding: 8px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; 
-            transition: transform 0.1s;
-        }
+        .btn-modal { padding: 8px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: transform 0.1s; }
         .btn-modal:active { transform: scale(0.96); }
         .btn-primary { background: #4cd964; color: #fff; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--track-bg); }
 
-        /* 颜色选择器 */
-        .picker-preview { height: 40px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.1); transition: background 0.3s; }
+        /* 颜色选择器 (原生+色块) */
+        .picker-container { margin-bottom: 16px; }
+        
+        /* 1. 原生取色器样式优化 (模拟成一个大按钮) */
+        .picker-native-input {
+            appearance: none; -webkit-appearance: none;
+            border: none; width: 100%; height: 48px; border-radius: 12px;
+            cursor: pointer; background: none; padding: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px;
+        }
+        .picker-native-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .picker-native-input::-webkit-color-swatch { border: none; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); }
+        
+        /* 2. 色块网格 */
         .picker-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .color-dot { 
             width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
             border: 2px solid transparent; box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
-            transition: transform 0.2s;
+            transition: transform 0.2s; position: relative;
         }
         .color-dot:hover { transform: scale(1.1); }
-        .color-dot.active { border-color: #fff; outline: 2px solid var(--text-muted); }
+        .color-dot.active::after {
+            content: ''; position: absolute; inset: -3px; border-radius: 50%;
+            border: 2px solid var(--text-main);
+        }
 
-        /* 日历选择器 */
+        /* 日历 */
         .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .cal-title { font-weight: 700; font-size: 16px; }
         .cal-btn { background: transparent; border: 1px solid var(--track-bg); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: var(--text-main); }
-        
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
         .cal-dow { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
-        .cal-day { 
-            height: 36px; display: flex; align-items: center; justify-content: center; 
-            border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--text-main);
-        }
+        .cal-day { height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--text-main); }
         .cal-day:hover { background: var(--track-bg); }
         .cal-day.selected { background: #4cd964; color: #fff; font-weight: 600; }
 
@@ -244,7 +226,7 @@
         
         @media (max-width: 400px) {
             .bento-grid { grid-template-columns: 1fr !important; }
-            .card--main { grid-column: 1 / -1 !important; grid-row: auto !important; }
+            .card--main { grid-column: 1 / -1 !important; }
             .split-row { grid-column: 1 / -1 !important; }
             .card--clock { grid-column: 1 / -1 !important; }
         }
@@ -288,7 +270,7 @@
             </div>
         </div>
 
-        <!-- 3. 圆环 (新结构) -->
+        <!-- 3. 圆环 (完美对齐+透明中心) -->
         <div class="split-row">
             <div class="card card--ring">
                 <div class="ring-text-group">
@@ -317,17 +299,18 @@
         </div>
     </div>
 
-    <!-- 4. 每日引言 (回归) -->
     <footer class="quote-card">
         <p id="quote-text" class="quote-text">Loading...</p>
     </footer>
 </div>
 
-<!-- 弹窗 (保持不变) -->
+<!-- 弹窗：主色 (原生Input + 色块) -->
 <div id="modal-primary" class="modal" aria-hidden="true">
     <div class="modal__card">
         <h3 class="modal__title">选择主色</h3>
-        <div id="preview-primary" class="picker-preview" style="background:var(--accent-color)"></div>
+        <!-- 原生取色器 (也是预览条) -->
+        <input type="color" id="native-primary" class="picker-native-input" value="#ff2d55">
+        <!-- 色块网格 -->
         <div class="picker-grid" id="grid-primary"></div>
         <div class="modal__actions">
             <button class="btn-modal btn-ghost" data-close="#modal-primary">取消</button>
@@ -335,10 +318,12 @@
         </div>
     </div>
 </div>
+
+<!-- 弹窗：背景 (原生Input + 色块) -->
 <div id="modal-bg" class="modal" aria-hidden="true">
     <div class="modal__card">
         <h3 class="modal__title">选择背景色</h3>
-        <div id="preview-bg" class="picker-preview" style="background:var(--bg-page); border:1px solid #eee"></div>
+        <input type="color" id="native-bg" class="picker-native-input" value="#ffffff">
         <div class="picker-grid" id="grid-bg"></div>
         <div class="modal__actions">
             <button class="btn-modal btn-ghost" data-close="#modal-bg">取消</button>
@@ -346,6 +331,8 @@
         </div>
     </div>
 </div>
+
+<!-- 弹窗：日历 -->
 <div id="modal-cal" class="modal" aria-hidden="true">
     <div class="modal__card">
         <h3 class="modal__title">设置 12 周起始日</h3>
@@ -369,7 +356,6 @@ const LS = {
     set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 };
 
-// 引言数据
 const DEFAULT_QUOTES = [
     '用12周时间完成1年目标', '成为自己人生的头号玩家', '少即是多，慢即是快',
     '我想让世界为我惊叹', '你只活一次。使它有意义', '你须寻得你所爱，并为之守望',
@@ -379,16 +365,14 @@ let quoteIndex = 0;
 
 function two(n){return String(n).padStart(2,'0')}
 
-// 更新圆环 (新逻辑)
+// 更新圆环 UI
 function updateRing(progressId, sphereId, pct) {
     const deg = (pct / 100) * 360;
     const progressEl = document.getElementById(progressId);
     const sphereEl = document.getElementById(sphereId);
-    
     if (progressEl && sphereEl) {
         progressEl.style.setProperty('--deg', `${deg}deg`);
         sphereEl.style.setProperty('--deg', `${deg}deg`);
-        // 只有进度大于0时才显示进度条和圆球
         const opacity = pct > 0 ? 1 : 0;
         progressEl.style.opacity = opacity;
         sphereEl.style.opacity = opacity;
@@ -444,27 +428,50 @@ function applySettings(theme) {
     document.getElementById('btn-bg').style.setProperty('--bg-swatch', bgVal);
 }
 
-// --- 弹窗逻辑 (保持不变) ---
+// 颜色选择器逻辑 (混合模式)
 const COLORS = ['#ff2d55', '#ff9500', '#ffcc00', '#4cd964', '#5ac8fa', '#007aff', '#5856d6', '#ff3b30', '#8e8e93', '#333333'];
 const BG_COLORS = ['transparent', '#ffffff', '#f2f2f7', '#e5e5e5', '#000000', '#1c1c1e', '#2c2c2e'];
 
-function renderColorGrid(gridId, colors, currentVal, previewId) {
+function setupColorPicker(nativeId, gridId, colors, initialVal, onValChange) {
+    const nativeInput = document.getElementById(nativeId);
     const grid = document.getElementById(gridId);
+    let currentVal = initialVal;
+
+    // 初始化原生Input
+    // 注意：type=color 不支持 transparent，如果初始是 transparent，设为白色避免报错
+    nativeInput.value = (initialVal === 'transparent') ? '#ffffff' : initialVal;
+
+    // 原生Input变化监听
+    nativeInput.addEventListener('input', (e) => {
+        currentVal = e.target.value;
+        // 清除下方选中态
+        grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
+        if(onValChange) onValChange(currentVal); // 实时传出用于预览? 这里暂不实时应用到页面，等Save
+    });
+
+    // 渲染色块
     grid.innerHTML = '';
-    let selected = currentVal;
     colors.forEach(c => {
         const dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.background = c;
         if(c === 'transparent') dot.style.backgroundImage = 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
-        if(c === selected) dot.classList.add('active');
+        
+        if(c === initialVal) dot.classList.add('active');
+        
         dot.onclick = () => {
-            selected = c; document.getElementById(previewId).style.background = c;
-            grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active')); dot.classList.add('active');
+            currentVal = c;
+            // 如果不是 transparent，同步更新上面的原生input
+            if(c !== 'transparent') nativeInput.value = c;
+            
+            grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
+            dot.classList.add('active');
         };
         grid.appendChild(dot);
     });
-    return () => selected;
+
+    return () => currentVal;
 }
 
+// 日历逻辑 (保持不变)
 let calDate = new Date();
 function renderCalendar() {
     const title = document.getElementById('cal-title'); const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
@@ -500,25 +507,32 @@ window.addEventListener('DOMContentLoaded', ()=>{
     const closeModal = (id) => document.getElementById(id).setAttribute('aria-hidden', 'true');
     document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.getAttribute('data-close')));
 
-    let getSelectedPrimary;
+    // 1. Primary Color Picker
+    let getPrimaryVal;
     document.getElementById('btn-primary').onclick = () => {
-        const t = document.documentElement.getAttribute('data-theme'); const cur = LS.get(`primary:${t}`, '#ff2d55');
-        document.getElementById('preview-primary').style.background = cur;
-        getSelectedPrimary = renderColorGrid('grid-primary', COLORS, cur, 'preview-primary'); openModal('modal-primary');
+        const t = document.documentElement.getAttribute('data-theme');
+        const cur = LS.get(`primary:${t}`, '#ff2d55');
+        // 初始化选择器
+        getPrimaryVal = setupColorPicker('native-primary', 'grid-primary', COLORS, cur);
+        openModal('modal-primary');
     };
     document.getElementById('save-primary').onclick = () => {
-        const val = getSelectedPrimary(); const t = document.documentElement.getAttribute('data-theme');
+        const val = getPrimaryVal();
+        const t = document.documentElement.getAttribute('data-theme');
         LS.set(`primary:${t}`, val); applySettings(t); closeModal('modal-primary');
     };
 
-    let getSelectedBg;
+    // 2. Background Color Picker
+    let getBgVal;
     document.getElementById('btn-bg').onclick = () => {
-        const t = document.documentElement.getAttribute('data-theme'); const cur = LS.get(`bg:${t}`, 'transparent');
-        document.getElementById('preview-bg').style.background = cur;
-        getSelectedBg = renderColorGrid('grid-bg', BG_COLORS, cur, 'preview-bg'); openModal('modal-bg');
+        const t = document.documentElement.getAttribute('data-theme');
+        const cur = LS.get(`bg:${t}`, 'transparent');
+        getBgVal = setupColorPicker('native-bg', 'grid-bg', BG_COLORS, cur);
+        openModal('modal-bg');
     };
     document.getElementById('save-bg').onclick = () => {
-        const val = getSelectedBg(); const t = document.documentElement.getAttribute('data-theme');
+        const val = getBgVal();
+        const t = document.documentElement.getAttribute('data-theme');
         LS.set(`bg:${t}`, val); applySettings(t); closeModal('modal-bg');
     };
 
@@ -535,7 +549,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
         document.documentElement.setAttribute('data-theme', next); LS.set('theme', next); applySettings(next);
     };
 
-    // 引言轮播
+    // 引言
     const quotes = LS.get('quotes', DEFAULT_QUOTES);
     const qEl = document.getElementById('quote-text');
     const setQuote = () => {
