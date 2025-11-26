@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>12-Week Fitness V6</title>
+    <title>12-Week Fitness V6.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -154,7 +154,7 @@
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 圆环结构 (完美对齐) */
+        /* 圆环结构 */
         .apple-ring-container { position: relative; width: 52px; height: 52px; }
         .apple-ring-track { position: absolute; inset: 0; border-radius: 50%; border: 5px solid var(--track-bg); }
         .apple-ring-progress {
@@ -186,10 +186,8 @@
         .btn-primary { background: #4cd964; color: #fff; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--track-bg); }
 
-        /* 颜色选择器 (原生+色块) */
+        /* 颜色选择器 */
         .picker-container { margin-bottom: 16px; }
-        
-        /* 1. 原生取色器样式优化 (模拟成一个大按钮) */
         .picker-native-input {
             appearance: none; -webkit-appearance: none;
             border: none; width: 100%; height: 48px; border-radius: 12px;
@@ -198,8 +196,6 @@
         }
         .picker-native-input::-webkit-color-swatch-wrapper { padding: 0; }
         .picker-native-input::-webkit-color-swatch { border: none; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); }
-        
-        /* 2. 色块网格 */
         .picker-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .color-dot { 
             width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
@@ -304,29 +300,27 @@
     </footer>
 </div>
 
-<!-- 弹窗：主色 (原生Input + 色块) -->
+<!-- 弹窗：主色 -->
 <div id="modal-primary" class="modal" aria-hidden="true">
     <div class="modal__card">
         <h3 class="modal__title">选择主色</h3>
-        <!-- 原生取色器 (也是预览条) -->
         <input type="color" id="native-primary" class="picker-native-input" value="#ff2d55">
-        <!-- 色块网格 -->
         <div class="picker-grid" id="grid-primary"></div>
         <div class="modal__actions">
-            <button class="btn-modal btn-ghost" data-close="#modal-primary">取消</button>
+            <button class="btn-modal btn-ghost" id="cancel-primary">取消</button>
             <button class="btn-modal btn-primary" id="save-primary">确定</button>
         </div>
     </div>
 </div>
 
-<!-- 弹窗：背景 (原生Input + 色块) -->
+<!-- 弹窗：背景 -->
 <div id="modal-bg" class="modal" aria-hidden="true">
     <div class="modal__card">
         <h3 class="modal__title">选择背景色</h3>
         <input type="color" id="native-bg" class="picker-native-input" value="#ffffff">
         <div class="picker-grid" id="grid-bg"></div>
         <div class="modal__actions">
-            <button class="btn-modal btn-ghost" data-close="#modal-bg">取消</button>
+            <button class="btn-modal btn-ghost" id="cancel-bg">取消</button>
             <button class="btn-modal btn-primary" id="save-bg">确定</button>
         </div>
     </div>
@@ -343,7 +337,7 @@
         </div>
         <div class="cal-grid" id="cal-grid"></div>
         <div class="modal__actions">
-            <button class="btn-modal btn-ghost" data-close="#modal-cal">取消</button>
+            <button class="btn-modal btn-ghost" id="cancel-cal">取消</button>
             <button class="btn-modal btn-primary" id="save-cal">确定</button>
         </div>
     </div>
@@ -383,7 +377,6 @@ function update(){
     const now = new Date();
     document.getElementById('clock').textContent = `${two(now.getHours())}:${two(now.getMinutes())}`;
     
-    // 12 Week Logic
     const urlParams = new URLSearchParams(window.location.search);
     const startStr = urlParams.get('start') || LS.get('start12w', null);
     const startDate = startStr ? new Date(startStr) : new Date(now.getFullYear(), now.getMonth(), 1);
@@ -418,77 +411,91 @@ function update(){
     document.getElementById('days-week').textContent = `剩${Math.max(0, Math.ceil((wE-now)/86400000))}天`;
 }
 
+// 直接设置 CSS 变量的应用函数
+function setGlobalStyle(prop, val) {
+    document.documentElement.style.setProperty(prop, val);
+}
+
 function applySettings(theme) {
     const pColor = LS.get(`primary:${theme}`, '#ff2d55');
-    document.documentElement.style.setProperty('--accent-color', pColor);
+    setGlobalStyle('--accent-color', pColor);
     document.getElementById('btn-primary').style.setProperty('--bg-swatch', pColor);
 
     const bgVal = LS.get(`bg:${theme}`, theme==='dark'?'#000000':'transparent');
-    document.documentElement.style.setProperty('--bg-page', bgVal);
+    setGlobalStyle('--bg-page', bgVal);
     document.getElementById('btn-bg').style.setProperty('--bg-swatch', bgVal);
 }
 
-// 颜色选择器逻辑 (混合模式)
+// 颜色选择器逻辑 (修复版：支持取消/确定)
 const COLORS = ['#ff2d55', '#ff9500', '#ffcc00', '#4cd964', '#5ac8fa', '#007aff', '#5856d6', '#ff3b30', '#8e8e93', '#333333'];
 const BG_COLORS = ['transparent', '#ffffff', '#f2f2f7', '#e5e5e5', '#000000', '#1c1c1e', '#2c2c2e'];
 
-function setupColorPicker(nativeId, gridId, colors, initialVal, onValChange) {
+function setupColorPicker(nativeId, gridId, colors, initialVal, onPreview) {
     const nativeInput = document.getElementById(nativeId);
     const grid = document.getElementById(gridId);
     let currentVal = initialVal;
 
-    // 初始化原生Input
-    // 注意：type=color 不支持 transparent，如果初始是 transparent，设为白色避免报错
+    // 初始化UI
     nativeInput.value = (initialVal === 'transparent') ? '#ffffff' : initialVal;
+    
+    // 渲染网格
+    const renderGrid = (selected) => {
+        grid.innerHTML = '';
+        colors.forEach(c => {
+            const dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.background = c;
+            if(c === 'transparent') dot.style.backgroundImage = 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
+            if(c === selected) dot.classList.add('active');
+            dot.onclick = () => {
+                currentVal = c;
+                if(c !== 'transparent') nativeInput.value = c;
+                renderGrid(c); // Re-render to update active class
+                if(onPreview) onPreview(c);
+            };
+            grid.appendChild(dot);
+        });
+    };
+    
+    renderGrid(initialVal);
 
-    // 原生Input变化监听
-    nativeInput.addEventListener('input', (e) => {
+    // 监听原生输入
+    nativeInput.oninput = (e) => {
         currentVal = e.target.value;
-        // 清除下方选中态
-        grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
-        if(onValChange) onValChange(currentVal); // 实时传出用于预览? 这里暂不实时应用到页面，等Save
-    });
-
-    // 渲染色块
-    grid.innerHTML = '';
-    colors.forEach(c => {
-        const dot = document.createElement('div'); dot.className = 'color-dot'; dot.style.background = c;
-        if(c === 'transparent') dot.style.backgroundImage = 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
-        
-        if(c === initialVal) dot.classList.add('active');
-        
-        dot.onclick = () => {
-            currentVal = c;
-            // 如果不是 transparent，同步更新上面的原生input
-            if(c !== 'transparent') nativeInput.value = c;
-            
-            grid.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
-            dot.classList.add('active');
-        };
-        grid.appendChild(dot);
-    });
+        renderGrid(null); // Clear grid selection
+        if(onPreview) onPreview(currentVal);
+    };
 
     return () => currentVal;
 }
 
-// 日历逻辑 (保持不变)
-let calDate = new Date();
-function renderCalendar() {
-    const title = document.getElementById('cal-title'); const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
-    title.textContent = `${calDate.getFullYear()}.${two(calDate.getMonth()+1)}`;
-    ['一','二','三','四','五','六','日'].forEach(d => { const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
-    const firstDay = new Date(calDate.getFullYear(), calDate.getMonth(), 1);
+// 日历逻辑 (修复取消)
+let tempCalDate = new Date(); // 临时的日历状态
+let selectedDate = new Date(); // 实际选中的日期
+
+function renderCalendar(baseDate, activeDate) {
+    const title = document.getElementById('cal-title'); 
+    const grid = document.getElementById('cal-grid'); 
+    grid.innerHTML = '';
+    title.textContent = `${baseDate.getFullYear()}.${two(baseDate.getMonth()+1)}`;
+    
+    ['一','二','三','四','五','六','日'].forEach(d => { 
+        const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); 
+    });
+    
+    const firstDay = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
     const startIdx = (firstDay.getDay() + 6) % 7; 
-    const daysInMonth = new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate();
+    const daysInMonth = new Date(baseDate.getFullYear(), baseDate.getMonth()+1, 0).getDate();
+    
     for(let i=0; i<startIdx; i++) grid.appendChild(document.createElement('div'));
-    const savedStr = LS.get('start12w', ''); const savedDate = savedStr ? new Date(savedStr) : new Date();
+    
     for(let d=1; d<=daysInMonth; d++) {
         const el = document.createElement('div'); el.className = 'cal-day'; el.textContent = d;
-        if(calDate.getFullYear()===savedDate.getFullYear() && calDate.getMonth()===savedDate.getMonth() && savedDate.getDate()===d) el.classList.add('selected');
+        // Check if this day matches the currently selected date (not saved yet)
+        if(baseDate.getFullYear()===activeDate.getFullYear() && baseDate.getMonth()===activeDate.getMonth() && activeDate.getDate()===d) {
+            el.classList.add('selected');
+        }
         el.onclick = () => {
-            savedDate.setFullYear(calDate.getFullYear(), calDate.getMonth(), d);
-            LS.set('start12w', `${savedDate.getFullYear()}-${two(savedDate.getMonth()+1)}-${two(savedDate.getDate())}`);
-            renderCalendar();
+            activeDate.setFullYear(baseDate.getFullYear(), baseDate.getMonth(), d);
+            renderCalendar(baseDate, activeDate); // re-render to show new selection
         };
         grid.appendChild(el);
     }
@@ -505,51 +512,84 @@ window.addEventListener('DOMContentLoaded', ()=>{
 
     const openModal = (id) => document.getElementById(id).setAttribute('aria-hidden', 'false');
     const closeModal = (id) => document.getElementById(id).setAttribute('aria-hidden', 'true');
-    document.querySelectorAll('[data-close]').forEach(btn => btn.onclick = () => closeModal(btn.getAttribute('data-close')));
 
-    // 1. Primary Color Picker
+    // 1. Primary Color
     let getPrimaryVal;
+    let initialPrimary;
     document.getElementById('btn-primary').onclick = () => {
         const t = document.documentElement.getAttribute('data-theme');
-        const cur = LS.get(`primary:${t}`, '#ff2d55');
-        // 初始化选择器
-        getPrimaryVal = setupColorPicker('native-primary', 'grid-primary', COLORS, cur);
+        initialPrimary = LS.get(`primary:${t}`, '#ff2d55'); // Record initial
+        // Setup picker with preview callback
+        getPrimaryVal = setupColorPicker('native-primary', 'grid-primary', COLORS, initialPrimary, (val) => {
+            setGlobalStyle('--accent-color', val); // Live preview
+        });
         openModal('modal-primary');
     };
     document.getElementById('save-primary').onclick = () => {
-        const val = getPrimaryVal();
         const t = document.documentElement.getAttribute('data-theme');
-        LS.set(`primary:${t}`, val); applySettings(t); closeModal('modal-primary');
+        const val = getPrimaryVal();
+        LS.set(`primary:${t}`, val);
+        applySettings(t); // Apply final
+        closeModal('modal-primary');
+    };
+    document.getElementById('cancel-primary').onclick = () => {
+        // Revert to initial
+        setGlobalStyle('--accent-color', initialPrimary);
+        closeModal('modal-primary');
     };
 
-    // 2. Background Color Picker
+    // 2. Background Color
     let getBgVal;
+    let initialBg;
     document.getElementById('btn-bg').onclick = () => {
         const t = document.documentElement.getAttribute('data-theme');
-        const cur = LS.get(`bg:${t}`, 'transparent');
-        getBgVal = setupColorPicker('native-bg', 'grid-bg', BG_COLORS, cur);
+        initialBg = LS.get(`bg:${t}`, 'transparent');
+        getBgVal = setupColorPicker('native-bg', 'grid-bg', BG_COLORS, initialBg, (val) => {
+            setGlobalStyle('--bg-page', val);
+        });
         openModal('modal-bg');
     };
     document.getElementById('save-bg').onclick = () => {
-        const val = getBgVal();
         const t = document.documentElement.getAttribute('data-theme');
-        LS.set(`bg:${t}`, val); applySettings(t); closeModal('modal-bg');
+        const val = getBgVal();
+        LS.set(`bg:${t}`, val);
+        applySettings(t);
+        closeModal('modal-bg');
+    };
+    document.getElementById('cancel-bg').onclick = () => {
+        setGlobalStyle('--bg-page', initialBg);
+        closeModal('modal-bg');
     };
 
+    // 3. Calendar
     document.getElementById('btn-12w').onclick = () => {
-        const savedStr = LS.get('start12w', ''); calDate = savedStr ? new Date(savedStr) : new Date();
-        renderCalendar(); openModal('modal-cal');
+        const savedStr = LS.get('start12w', ''); 
+        // Create decoupled date objects
+        tempCalDate = savedStr ? new Date(savedStr) : new Date(); // View month
+        selectedDate = savedStr ? new Date(savedStr) : new Date(); // Selection state
+        renderCalendar(tempCalDate, selectedDate);
+        openModal('modal-cal');
     };
-    document.getElementById('cal-prev').onclick = () => { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
-    document.getElementById('cal-next').onclick = () => { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
-    document.getElementById('save-cal').onclick = () => { update(); closeModal('modal-cal'); };
+    document.getElementById('cal-prev').onclick = () => { tempCalDate.setMonth(tempCalDate.getMonth()-1); renderCalendar(tempCalDate, selectedDate); };
+    document.getElementById('cal-next').onclick = () => { tempCalDate.setMonth(tempCalDate.getMonth()+1); renderCalendar(tempCalDate, selectedDate); };
+    
+    document.getElementById('save-cal').onclick = () => {
+        // Save only on confirm
+        const v = `${selectedDate.getFullYear()}-${two(selectedDate.getMonth()+1)}-${two(selectedDate.getDate())}`;
+        LS.set('start12w', v);
+        update(); 
+        closeModal('modal-cal');
+    };
+    document.getElementById('cancel-cal').onclick = () => {
+        closeModal('modal-cal'); // Do nothing, changes discarded
+    };
 
     document.getElementById('btn-theme').onclick = () => {
         const cur = document.documentElement.getAttribute('data-theme'); const next = cur==='light'?'dark':'light';
         document.documentElement.setAttribute('data-theme', next); LS.set('theme', next); applySettings(next);
     };
 
-    // 引言
+    // Quotes
     const quotes = LS.get('quotes', DEFAULT_QUOTES);
     const qEl = document.getElementById('quote-text');
     const setQuote = () => {
