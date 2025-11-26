@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>12-Week Fitness V6.1</title>
+    <title>12-Week Fitness V6.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,11 +87,13 @@
         }
         .card:hover { transform: translateY(-2px); background: var(--bg-card-hover); }
 
-        /* 控制栏 */
+        /* 1. 控制栏 (隐形模式) */
         .header-ctrls {
             display: flex; gap: 8px; position: absolute; top: 18px; right: 18px; z-index: 50;
-            opacity: 0.3; transition: opacity 0.2s; 
+            opacity: 0; /* 关键修改：默认完全透明 */
+            transition: opacity 0.2s ease-in-out; 
         }
+        /* 只有鼠标悬停在卡片上时，按钮才显现 */
         .card:hover .header-ctrls, .header-ctrls:hover { opacity: 1; }
         
         .ctrl-btn {
