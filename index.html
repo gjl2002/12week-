@@ -105,7 +105,9 @@
         .overview-tools .dash-ctrls { position: static; opacity: 0; }
         .time-overview-card:hover .overview-tools .dash-ctrls,
         .overview-tools:hover .dash-ctrls { opacity: 1; }
-        .btn-display { opacity: 1 !important; }
+        .overview-tools .btn-display { opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .time-overview-card:hover .overview-tools .btn-display,
+        .overview-tools .btn-display:focus-visible { opacity: 1; pointer-events: auto; }
 
         .overview-primary {
             background: var(--accent-color); color: #fff; border-radius: 16px;
@@ -113,7 +115,7 @@
         }
         .overview-primary-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
         .overview-primary .card__label { color: rgba(255,255,255,0.82); }
-        .overview-primary .main-stat { font-size: 38px; }
+        .overview-primary .main-stat { font-size: 32px; white-space: nowrap; }
         .overview-primary .hero-bar { margin-top: 9px; }
         .overview-secondary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
         .overview-ring-metric { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; padding: 4px 10px; }
@@ -125,7 +127,10 @@
         .cal-header { gap: 8px; }
         .cal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cal-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .calendar-mode-btn { border: 0; border-radius: 8px; padding: 5px 8px; background: var(--track-bg); color: var(--text-main); font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .calendar-mode-btn { display: inline-flex; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, background 0.2s ease; border: 0; border-radius: 8px; padding: 5px 8px; background: var(--track-bg); color: var(--accent-color); font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        #calendar-card:hover .calendar-mode-btn,
+        .calendar-mode-btn:focus-visible { opacity: 1; pointer-events: auto; }
+        .calendar-mode-btn:hover { background: var(--accent-color); color: #fff; }
 
         .display-options { display: grid; gap: 8px; margin-top: 14px; text-align: left; }
         .display-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 10px; border-radius: 10px; background: var(--track-bg); color: var(--text-main); font-size: 13px; }
@@ -330,7 +335,10 @@
             .time-overview-card { padding: 12px; gap: 10px; }
             .overview-date-time { gap: 8px; }
             .overview-primary { padding: 12px; }
-            .overview-primary .main-stat { font-size: 34px; }
+            .overview-primary-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px; }
+            .overview-primary-info { min-width: 0; }
+            .overview-primary-info .card__label:last-child { white-space: normal; line-height: 1.25; }
+            .overview-primary .main-stat { font-size: 26px; }
             .overview-ring-metric { padding: 4px 6px; }
             .overview-ring-metric + .overview-ring-metric { padding-left: 9px; }
             .overview-ring-metric .apple-ring-container { width: 32px; height: 32px; }
@@ -356,6 +364,7 @@
 
         @media (hover: none) {
             .overview-tools .dash-ctrls { opacity: 1; }
+            .overview-tools .btn-display, .calendar-mode-btn { opacity: 1; pointer-events: auto; }
         }
     </style>
 </head>
@@ -383,7 +392,7 @@
 
         <div class="overview-primary" id="metric-12w">
             <div class="overview-primary-top">
-                <div>
+                <div class="overview-primary-info">
                     <div class="card__label">12 Week Year</div>
                     <div class="card__label" style="margin: 0;">第 <span id="weeks-12w-num">1</span>/12 周 · 剩 <span id="days-12w-left">0</span> 天</div>
                 </div>
