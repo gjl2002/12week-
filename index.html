@@ -128,11 +128,6 @@
 
         .cal-header { gap: 8px; }
         .cal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .cal-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .calendar-mode-btn { display: inline-flex; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, background 0.2s ease; border: 0; border-radius: 8px; padding: 5px 8px; background: var(--track-bg); color: var(--accent-color); font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        #calendar-card:hover .calendar-mode-btn,
-        .calendar-mode-btn:focus-visible { opacity: 1; pointer-events: auto; }
-        .calendar-mode-btn:hover { background: var(--accent-color); color: #fff; }
 
         .display-options { display: grid; gap: 8px; margin-top: 14px; text-align: left; }
         .display-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 10px; border-radius: 10px; background: var(--track-bg); color: var(--text-main); font-size: 13px; }
@@ -231,10 +226,7 @@
         /* --- Calendar: Accordion / Focus Mode --- */
         .card--calendar { padding-top: 24px; padding-bottom: 16px; /* 底部不需要太多空间了 */ }
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; height: 20px; position: relative; }
-        .cal-title { flex: 1; min-width: 0; padding-right: 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); transition: padding-right 0.2s ease; }
-        #calendar-card:hover .cal-title,
-        #calendar-card:focus-within .cal-title { padding-right: 92px; }
-        .cal-actions { position: absolute; top: 50%; right: 0; transform: translateY(-50%); z-index: 2; }
+        .cal-title { flex: 1; min-width: 0; padding-right: 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
         
         /* 恢复 SVG 图标 */
         .cal-ctrls { display: flex; gap: 6px; opacity: 0; transition: opacity 0.2s; }
@@ -367,8 +359,7 @@
 
         @media (hover: none) {
             .overview-tools .dash-ctrls { opacity: 1; }
-            .overview-tools .btn-display, .calendar-mode-btn { opacity: 1; pointer-events: auto; }
-            #calendar-card .cal-title { padding-right: 92px; }
+            .overview-tools .btn-display { opacity: 1; pointer-events: auto; }
         }
     </style>
 </head>
@@ -437,9 +428,6 @@
     <div class="card card--calendar" id="calendar-card">
         <div class="cal-header">
             <div class="cal-title" id="date-range-label">12 Week View</div>
-            <div class="cal-actions">
-                <button id="btn-calendar-mode" class="calendar-mode-btn" type="button" aria-expanded="false">展开完整12周</button>
-            </div>
         </div>
         <div class="dow-row">
             <div></div> <!-- Corner -->
@@ -550,12 +538,6 @@ function applyDisplayPreferences() {
     setVisible('overview-title', !displayPrefs.dateTime);
     setVisible('quote-card', displayPrefs.quote);
     setVisible('calendar-card', calendarMode !== 'hidden');
-    const modeButton = document.getElementById('btn-calendar-mode');
-    if (modeButton) {
-        modeButton.hidden = calendarMode === 'hidden';
-        modeButton.textContent = calendarMode === 'full' ? '收起日历' : '展开完整12周';
-        modeButton.setAttribute('aria-expanded', String(calendarMode === 'full'));
-    }
 }
 
 function syncDisplaySettingsForm() {
@@ -776,13 +758,6 @@ window.addEventListener('DOMContentLoaded', () => {
         updateAll(startDate);
         closeM('modal-display');
     });
-    safeClick('btn-calendar-mode', () => {
-        calendarMode = calendarMode === 'full' ? 'compact' : 'full';
-        LS.set('calendarMode', calendarMode);
-        applyDisplayPreferences();
-        updateAll(startDate);
-    });
-
     // Bind Modals to BOTH sets of buttons (Dash + Cal)
     const bindBtns = (ids, handler) => ids.forEach(id => safeClick(id, handler));
 
