@@ -97,17 +97,15 @@
         .card:hover { transform: translateY(-1px); background: var(--bg-card-hover); }
 
         /* One time overview: date, 12-week progress, year and week metrics */
-        .time-overview-card { gap: 12px; padding: 14px; }
-        .overview-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
-        .overview-date-time { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: 1; min-width: 0; width: auto; }
+        .time-overview-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+        .overview-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; min-height: 24px; padding: 0 2px; }
+        .overview-date-time { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; width: 100%; padding: 0 4px; }
         .overview-title { font-size: 11px; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
         .overview-tools { display: flex; align-items: center; gap: 6px; flex-shrink: 0; position: relative; }
-        .overview-tools .dash-ctrls { position: static; opacity: 0; }
-        .time-overview-card:hover .overview-tools .dash-ctrls,
-        .overview-tools:hover .dash-ctrls { opacity: 1; }
         .overview-tools .btn-display { opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-        .time-overview-card:hover .overview-tools .btn-display,
+        .time-overview-section:hover .overview-tools .btn-display,
         .overview-tools .btn-display:focus-visible { opacity: 1; pointer-events: auto; }
+        .overview-date-time .clock-display { font-size: 24px; }
 
         .overview-primary {
             background: var(--accent-color); color: #fff; border-radius: 16px;
@@ -329,8 +327,9 @@
         @media (max-width: 480px) {
             body { align-items: flex-start; padding: 6px; }
             .widget-container { max-width: none; gap: 8px; }
-            .time-overview-card { padding: 12px; gap: 10px; }
+            .time-overview-section { gap: 10px; }
             .overview-date-time { gap: 8px; }
+            .overview-date-time .clock-display { font-size: 22px; }
             .overview-primary { padding: 12px; }
             .overview-primary-top { gap: 6px; }
             .overview-primary .main-stat { font-size: clamp(15px, 4vw, 18px); }
@@ -358,7 +357,6 @@
         }
 
         @media (hover: none) {
-            .overview-tools .dash-ctrls { opacity: 1; }
             .overview-tools .btn-display { opacity: 1; pointer-events: auto; }
         }
     </style>
@@ -368,16 +366,9 @@
 <div class="widget-container">
     
     <!-- 1. 时间概览：日期、12周进度、年进度和周进度共享一个组件 -->
-    <section class="card time-overview-card" id="time-overview" aria-label="时间概览">
+    <section class="time-overview-section" id="time-overview" aria-label="时间概览">
         <div class="overview-top">
-            <div id="overview-title" class="overview-title" hidden>时间概览</div>
-            <div class="clock-group overview-date-time" id="metric-datetime">
-                <div class="clock-label-group">
-                    <div id="date-display" class="card__label">Loading...</div>
-                    <div id="week-badge" class="badge">W1</div>
-                </div>
-                <div id="clock" class="clock-display">00:00</div>
-            </div>
+            <div id="overview-title" class="overview-title">时间概览</div>
             <div class="overview-tools">
                 <button id="btn-display" class="ctrl-btn btn-display" title="自定义显示" aria-label="自定义显示">
                     <svg class="icon-svg" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2"/></svg>
@@ -394,6 +385,14 @@
                 <div class="main-stat" id="pct-12w">0%</div>
             </div>
             <div class="hero-bar"><div id="bar-12w" class="hero-bar__fill"></div></div>
+        </div>
+
+        <div class="clock-group overview-date-time" id="metric-datetime">
+            <div class="clock-label-group">
+                <div id="date-display" class="card__label">Loading...</div>
+                <div id="week-badge" class="badge">W1</div>
+            </div>
+            <div id="clock" class="clock-display">00:00</div>
         </div>
 
         <div class="overview-secondary" aria-label="其他时间进度">
@@ -535,7 +534,6 @@ function applyDisplayPreferences() {
     setVisible('metric-12w', displayPrefs.progress12w);
     setVisible('metric-year', displayPrefs.year);
     setVisible('metric-week', displayPrefs.week);
-    setVisible('overview-title', !displayPrefs.dateTime);
     setVisible('quote-card', displayPrefs.quote);
     setVisible('calendar-card', calendarMode !== 'hidden');
 }
