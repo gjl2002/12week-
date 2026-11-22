@@ -739,6 +739,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const openM = (id) => document.getElementById(id).setAttribute('aria-hidden', 'false');
     const closeM = (id) => document.getElementById(id).setAttribute('aria-hidden', 'true');
 
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' || (!event.metaKey && !event.ctrlKey)) return;
+        const activeModal = document.querySelector('.modal[aria-hidden="false"]');
+        const confirmButton = activeModal?.querySelector('.btn-primary');
+        if (!confirmButton || confirmButton.disabled) return;
+        event.preventDefault();
+        confirmButton.click();
+    });
+
     safeClick('btn-display', () => { syncDisplaySettingsForm(); openM('modal-display'); });
     safeClick('cancel-display', () => closeM('modal-display'));
     safeClick('save-display', () => {
